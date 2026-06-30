@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 [build]
 builder = "nixpacks"
 buildCommand = "npm run build"
@@ -7,3 +8,14 @@ startCommand = "npm start"
 restartPolicyMaxRetries = 5
 healthcheckPath = "/health"
 healthcheckTimeout = 5
+=======
+[build]
+builder = "nixpacks"
+buildCommand = "npm run build"
+
+[deploy]
+startCommand = "npm start"
+restartPolicyMaxRetries = 5
+healthcheckPath = "/health"
+healthcheckTimeout = 5
+>>>>>>> aee9477181ceb519ab7930d588f6fed3b340e70c

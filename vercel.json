@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 {
   "outputDirectory": "./",
   "env": {
@@ -5,3 +6,12 @@
     "VITE_APP_URL": "@about-me-lol-domain"
   }
 }
+=======
+{
+  "outputDirectory": "./",
+  "env": {
+    "VITE_API_BASE_URL": "@about-me-api-railway-url",
+    "VITE_APP_URL": "@about-me-lol-domain"
+  }
+}
+>>>>>>> aee9477181ceb519ab7930d588f6fed3b340e70c

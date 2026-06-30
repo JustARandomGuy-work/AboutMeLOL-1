@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 1: Create a navbar
 info: Navbar in the center top of everyones screen Right Side Of Navbar: redirects to "Help Center","Discord","Leaderboard","Pricing",
 if already logged in then show "Dashboard" if not signed in then show "Log In", "Sign Up". Left Side Of Navbar: "About-Me.LOL" text
@@ -5,4 +6,13 @@ if already logged in then show "Dashboard" if not signed in then show "Log In", 
 2: Landing Page
 info: Big text in the center of the screen Headline: "Your entire presence. Elevated"
 subtext: "About Me is the ultimate link-in-bio platform built for elite creators. Showcase your links, track deep analytics, and customize your layout with zero compromises."
+=======
+1: Create a navbar
+info: Navbar in the center top of everyones screen Right Side Of Navbar: redirects to "Help Center","Discord","Leaderboard","Pricing",
+if already logged in then show "Dashboard" if not signed in then show "Log In", "Sign Up". Left Side Of Navbar: "About-Me.LOL" text
+
+2: Landing Page
+info: Big text in the center of the screen Headline: "Your entire presence. Elevated"
+subtext: "About Me is the ultimate link-in-bio platform built for elite creators. Showcase your links, track deep analytics, and customize your layout with zero compromises."
+>>>>>>> aee9477181ceb519ab7930d588f6fed3b340e70c
 2 buttons under the subtext 1: "Sign Up for Free". 2: "View Pricing"

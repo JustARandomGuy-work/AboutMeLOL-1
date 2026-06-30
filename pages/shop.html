@@ -1,3 +1,181 @@
+<<<<<<< HEAD
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cosmetics Shop - About Me.LOL</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .shop-header { text-align: center; padding: 40px 20px 0; }
+      .shop-header h1 { font-size: 36px; margin: 0 0 12px; }
+      .shop-header p { color: rgba(233,236,255,.6); font-size: 16px; margin: 0 0 30px; }
+      .cosmetics-grid { max-width: 1200px; margin: 30px auto; padding: 0 20px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+      .cosmetic-card { background: rgba(182,112,255,.08); border: 1px solid rgba(182,112,255,.2); border-radius: 12px; overflow: hidden; transition: all 200ms; }
+      .cosmetic-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(182,112,255,.15); }
+      .cosmetic-preview { width: 100%; height: 150px; background: linear-gradient(135deg, rgba(182,112,255,.3), rgba(108,246,255,.3)); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+      .cosmetic-info { padding: 16px; }
+      .cosmetic-name { font-weight: 600; font-size: 16px; margin: 0 0 4px; }
+      .cosmetic-type { font-size: 12px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.5px; }
+      .cosmetic-desc { font-size: 13px; color: rgba(233,236,255,.6); margin: 8px 0; }
+      .cosmetic-price { font-size: 20px; font-weight: 700; color: var(--accent); margin: 12px 0; }
+      .btn-buy { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+      .btn-buy:hover { background: #a860e6; }
+      .btn-buy.owned { background: #50ff96; color: #000; }
+      .btn-buy.owned:hover { background: #40dd86; }
+      .filter-tabs { text-align: center; margin-bottom: 30px; }
+      .filter-tab { padding: 8px 16px; background: rgba(182,112,255,.1); border: 1px solid rgba(182,112,255,.2); border-radius: 6px; margin: 0 6px; cursor: pointer; font-size: 14px; }
+      .filter-tab.active { background: var(--accent); border-color: var(--accent); }
+      .auth-prompt { text-align: center; padding: 40px 20px; background: rgba(182,112,255,.1); border-radius: 12px; margin: 40px auto; max-width: 400px; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="/" aria-label="About-Me.LOL">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-text">About-Me.LOL</span>
+        </a>
+        <nav class="topnav" aria-label="Top navigation">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link" href="/pages/pricing.html">Pricing</a>
+        </nav>
+        <div class="auth" id="auth"></div>
+      </div>
+    </header>
+
+    <div class="shop-header">
+      <h1>Cosmetics Shop</h1>
+      <p>Level up your profile with exclusive cosmetics</p>
+    </div>
+
+    <div class="filter-tabs" id="filterTabs"></div>
+    <div class="cosmetics-grid" id="cosmeticsGrid"></div>
+
+    <div id="authPrompt" style="display: none;">
+      <div class="auth-prompt">
+        <h2>Sign in to shop</h2>
+        <p>Create an account to purchase cosmetics and customize your profile.</p>
+        <a href="/pages/login.html" class="btn" style="background: var(--accent); color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">Log In</a>
+        <a href="/pages/signup.html" class="btn" style="background: rgba(182,112,255,.2); color: var(--accent); padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block; margin-left: 8px;">Sign Up</a>
+      </div>
+    </div>
+
+    <script>
+      window.API_BASE_URL = window.API_BASE_URL || (
+        window.location.hostname === 'localhost'
+          ? 'http://localhost:3000'
+          : 'https://aboutmelol-1.onrender.com'
+      );
+      let allCosmetics = [];
+      let userCosmetics = [];
+      let currentFilter = 'all';
+
+      async function loadCosmetics() {
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/shop');
+          allCosmetics = await response.json();
+          renderCosmetics();
+          createFilters();
+        } catch (error) {
+          console.error('Error loading cosmetics:', error);
+        }
+      }
+
+      async function loadUserCosmetics() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/user/' + localStorage.getItem('userId'), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await response.json();
+          userCosmetics = data.cosmetics.map(c => c.id);
+        } catch (error) {
+          console.error('Error loading user cosmetics:', error);
+        }
+      }
+
+      function createFilters() {
+        const types = ['all', ...new Set(allCosmetics.map(c => c.type))];
+        const html = types.map(type => 
+          `<button class="filter-tab ${type === 'all' ? 'active' : ''}" onclick="filterCosmetics('${type}')">${type.toUpperCase()}</button>`
+        ).join('');
+        document.getElementById('filterTabs').innerHTML = html;
+      }
+
+      function filterCosmetics(type) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        renderCosmetics();
+      }
+
+      function renderCosmetics() {
+        const cosmetics = currentFilter === 'all' ? allCosmetics : allCosmetics.filter(c => c.type === currentFilter);
+        const html = cosmetics.map(c => `
+          <div class="cosmetic-card">
+            <div class="cosmetic-preview">✨</div>
+            <div class="cosmetic-info">
+              <h3 class="cosmetic-name">${c.name}</h3>
+              <div class="cosmetic-type">${c.type}</div>
+              <p class="cosmetic-desc">${c.description}</p>
+              <div class="cosmetic-price">$${c.price.toFixed(2)}</div>
+              <button class="btn-buy ${userCosmetics.includes(c.id) ? 'owned' : ''}" 
+                onclick="buyCosmetic('${c.id}', ${c.price})" 
+                ${userCosmetics.includes(c.id) ? 'disabled' : ''}>
+                ${userCosmetics.includes(c.id) ? '✓ Owned' : 'Buy Now'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+        document.getElementById('cosmeticsGrid').innerHTML = html;
+      }
+
+      async function buyCosmetic(cosmeticId, price) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/pages/login.html';
+          return;
+        }
+
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/payments/create-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ cosmeticId })
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            window.location.href = data.approvalUrl;
+          } else {
+            alert('Error: ' + data.error);
+          }
+        } catch (error) {
+          alert('Error creating order: ' + error.message);
+        }
+      }
+
+      // Check auth and render
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('authPrompt').style.display = 'block';
+      } else {
+        document.getElementById('auth').innerHTML = `<a href="/pages/dashboard/index.html" class="auth-link">Dashboard</a>`;
+        loadUserCosmetics();
+      }
+
+      loadCosmetics();
+    </script>
+  </body>
+</html>
+=======
 <!doctype html>
 <html lang="en">
   <head>
@@ -170,3 +348,4 @@
     </script>
   </body>
 </html>
+>>>>>>> aee9477181ceb519ab7930d588f6fed3b340e70c

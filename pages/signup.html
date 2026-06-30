@@ -1,3 +1,179 @@
+<<<<<<< HEAD
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign Up - About Me.LOL</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .auth-form { max-width: 420px; margin: 60px auto; }
+      .form-group { margin-bottom: 20px; }
+      .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
+      .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(182,112,255,.3); border-radius: 8px; background: rgba(13,7,20,.5); color: var(--text); font-size: 14px; }
+      .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(182,112,255,.1); }
+      .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; }
+      .btn-submit:hover { background: #a860e6; }
+      .btn-submit.loading { opacity: 0.7; cursor: not-allowed; }
+      .form-footer { text-align: center; margin-top: 16px; font-size: 14px; }
+      .form-footer a { color: var(--accent2); text-decoration: none; }
+      .error-msg { background: rgba(255,80,80,.1); border-left: 3px solid #ff5050; padding: 12px; border-radius: 4px; color: #ff8080; font-size: 14px; margin-bottom: 16px; display: none; }
+      .success-msg { background: rgba(80,255,150,.1); border-left: 3px solid #50ff96; padding: 12px; border-radius: 4px; color: #80ffb3; font-size: 14px; margin-bottom: 16px; display: none; }
+      .password-strength { font-size: 12px; margin-top: 4px; }
+      .strength-meter { height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
+      .strength-fill { height: 100%; width: 0%; background: #ff5050; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <a class="brand" href="/" aria-label="About-Me.LOL">
+          <span class="brand-dot" aria-hidden="true"></span>
+          <span class="brand-text">About-Me.LOL</span>
+        </a>
+        <div class="auth"></div>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <section class="auth-form">
+        <h1 style="text-align: center; margin-bottom: 30px; font-size: 24px;">Create Account</h1>
+        
+        <div class="error-msg" id="errorMsg"></div>
+        <div class="success-msg" id="successMsg"></div>
+
+        <form id="signupForm">
+          <div class="form-group">
+            <label for="email">Email Address</label>
+            <input type="email" id="email" name="email" required placeholder="you@example.com" />
+          </div>
+
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input type="text" id="username" name="username" required placeholder="your_username" pattern="[a-zA-Z0-9_-]{3,20}" />
+            <div style="font-size: 12px; color: rgba(233,236,255,.5); margin-top: 4px;">3-20 characters, letters, numbers, underscore, dash</div>
+          </div>
+
+          <div class="form-group">
+            <label for="password">Password</label>
+            <input type="password" id="password" name="password" required placeholder="••••••••" minlength="8" />
+            <div class="password-strength">
+              <div style="margin-bottom: 4px; color: rgba(233,236,255,.6);">Strength: <span id="strengthText">Weak</span></div>
+              <div class="strength-meter">
+                <div class="strength-fill" id="strengthFill"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label for="confirmPassword">Confirm Password</label>
+            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
+          </div>
+
+          <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
+        </form>
+
+        <div class="form-footer">
+          Already have an account? <a href="/pages/login.html">Log In</a>
+        </div>
+
+        <div class="form-footer" style="margin-top: 8px;">
+          <a href="/" style="color: rgba(233,236,255,.6);">← Back to Home</a>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      window.API_BASE_URL = window.API_BASE_URL || (
+        window.location.hostname === 'localhost'
+          ? 'http://localhost:3000'
+          : 'https://aboutmelol-1.onrender.com'
+      );
+
+      const passwordInput = document.getElementById('password');
+      const strengthFill = document.getElementById('strengthFill');
+      const strengthText = document.getElementById('strengthText');
+
+      passwordInput.addEventListener('input', () => {
+        const pwd = passwordInput.value;
+        let strength = 0;
+        
+        if (pwd.length >= 8) strength += 20;
+        if (pwd.length >= 12) strength += 20;
+        if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength += 20;
+        if (/[0-9]/.test(pwd)) strength += 20;
+        if (/[^a-zA-Z0-9]/.test(pwd)) strength += 20;
+
+        strengthFill.style.width = strength + '%';
+        
+        if (strength < 40) { strengthText.textContent = 'Weak'; strengthFill.style.background = '#ff5050'; }
+        else if (strength < 70) { strengthText.textContent = 'Fair'; strengthFill.style.background = '#ffb050'; }
+        else if (strength < 90) { strengthText.textContent = 'Good'; strengthFill.style.background = '#50d0ff'; }
+        else { strengthText.textContent = 'Strong'; strengthFill.style.background = '#50ff96'; }
+      });
+
+      document.getElementById('signupForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const errorMsg = document.getElementById('errorMsg');
+        const successMsg = document.getElementById('successMsg');
+        const submitBtn = document.getElementById('submitBtn');
+
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+
+        const email = document.getElementById('email').value;
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        if (password !== confirmPassword) {
+          errorMsg.textContent = 'Passwords do not match';
+          errorMsg.style.display = 'block';
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.classList.add('loading');
+        submitBtn.textContent = 'Creating account...';
+
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, username, password })
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || 'Signup failed');
+          }
+
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('refreshToken', data.refreshToken);
+          localStorage.setItem('userId', data.id);
+          localStorage.setItem('username', data.username);
+
+          successMsg.textContent = 'Account created! Redirecting...';
+          successMsg.style.display = 'block';
+
+          setTimeout(() => {
+            window.location.href = '/pages/dashboard/index.html';
+          }, 1500);
+        } catch (error) {
+          errorMsg.textContent = error.message;
+          errorMsg.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
+          submitBtn.textContent = 'Create Account';
+        }
+      });
+    </script>
+  </body>
+</html>
+=======
 <!doctype html>
 <html lang="en">
   <head>
@@ -166,3 +342,4 @@
     </script>
   </body>
 </html>
+>>>>>>> aee9477181ceb519ab7930d588f6fed3b340e70c
