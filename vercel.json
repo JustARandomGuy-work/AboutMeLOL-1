@@ -1,7 +1,5 @@
 {
-  "buildCommand": "npm run build",
   "outputDirectory": "./",
-  "framework": "static",
   "env": {
     "VITE_API_BASE_URL": "@about-me-api-railway-url",
     "VITE_APP_URL": "@about-me-lol-domain"
