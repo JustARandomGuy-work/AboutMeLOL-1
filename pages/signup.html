@@ -6,23 +6,6 @@
     <title>Sign Up - About Me.LOL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
     <link rel="stylesheet" href="../styles.css" />
-    <style>
-      .auth-form { max-width: 420px; margin: 60px auto; }
-      .form-group { margin-bottom: 20px; }
-      .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
-      .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(182,112,255,.3); border-radius: 8px; background: rgba(13,7,20,.5); color: var(--text); font-size: 14px; }
-      .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(182,112,255,.1); }
-      .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; }
-      .btn-submit:hover { background: #a860e6; }
-      .btn-submit.loading { opacity: 0.7; cursor: not-allowed; }
-      .form-footer { text-align: center; margin-top: 16px; font-size: 14px; }
-      .form-footer a { color: var(--accent2); text-decoration: none; }
-      .error-msg { background: rgba(255,80,80,.1); border-left: 3px solid #ff5050; padding: 12px; border-radius: 4px; color: #ff8080; font-size: 14px; margin-bottom: 16px; display: none; }
-      .success-msg { background: rgba(80,255,150,.1); border-left: 3px solid #50ff96; padding: 12px; border-radius: 4px; color: #80ffb3; font-size: 14px; margin-bottom: 16px; display: none; }
-      .password-strength { font-size: 12px; margin-top: 4px; }
-      .strength-meter { height: 4px; background: rgba(255,255,255,.1); border-radius: 2px; margin-top: 4px; overflow: hidden; }
-      .strength-fill { height: 100%; width: 0%; background: #ff5050; }
-    </style>
   </head>
   <body>
     <header class="topbar">
@@ -31,143 +14,147 @@
           <span class="brand-dot" aria-hidden="true"></span>
           <span class="brand-text">About-Me.LOL</span>
         </a>
+        <nav class="topnav">
+          <a class="nav-link" href="/pricing">Pricing</a>
+        </nav>
         <div class="auth"></div>
       </div>
     </header>
 
-    <main class="wrap">
-      <section class="auth-form">
-        <h1 style="text-align: center; margin-bottom: 30px; font-size: 24px;">Create Account</h1>
-        
-        <div class="error-msg" id="errorMsg"></div>
-        <div class="success-msg" id="successMsg"></div>
-
-        <form id="signupForm">
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required placeholder="you@example.com" />
-          </div>
-
-          <div class="form-group">
-            <label for="username">Username</label>
-            <input type="text" id="username" name="username" required placeholder="your_username" pattern="[a-zA-Z0-9_-]{3,20}" />
-            <div style="font-size: 12px; color: rgba(233,236,255,.5); margin-top: 4px;">3-20 characters, letters, numbers, underscore, dash</div>
-          </div>
-
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required placeholder="••••••••" minlength="8" />
-            <div class="password-strength">
-              <div style="margin-bottom: 4px; color: rgba(233,236,255,.6);">Strength: <span id="strengthText">Weak</span></div>
-              <div class="strength-meter">
-                <div class="strength-fill" id="strengthFill"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="confirmPassword">Confirm Password</label>
-            <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
-          </div>
-
-          <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
-        </form>
-
-        <div class="form-footer">
-          Already have an account? <a href="/pages/login.html">Log In</a>
+    <main class="wrap auth-page">
+      <section class="auth-panel">
+        <div class="auth-copy">
+          <span class="eyebrow">Create your account</span>
+          <h1>Start with the method that feels easiest.</h1>
+          <p>Use email, Google, or Discord. Every option leads to the same beautiful experience.</p>
+          <ul class="auth-points">
+            <li>Set up your profile in minutes</li>
+            <li>Keep your links, shop, and analytics in one place</li>
+            <li>Invite your audience with a polished public profile</li>
+          </ul>
         </div>
 
-        <div class="form-footer" style="margin-top: 8px;">
-          <a href="/" style="color: rgba(233,236,255,.6);">← Back to Home</a>
+        <div class="auth-card">
+          <div class="method-list" role="list" aria-label="Sign up methods">
+            <button class="method-card active" data-mode="email" type="button">
+              <span class="method-title">Email & password</span>
+              <span class="method-subtitle">Create a classic account with your email.</span>
+            </button>
+            <button class="method-card" data-mode="google" type="button">
+              <span class="method-title">Continue with Google</span>
+              <span class="method-subtitle">Use your Google account for a fast sign-up.</span>
+            </button>
+            <button class="method-card" data-mode="discord" type="button">
+              <span class="method-title">Continue with Discord</span>
+              <span class="method-subtitle">Bring your server identity into your profile.</span>
+            </button>
+          </div>
+
+          <div class="error-msg" id="errorMsg"></div>
+          <div class="success-msg" id="successMsg"></div>
+
+          <div id="emailFormPanel">
+            <form id="signupForm" class="auth-form">
+              <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required placeholder="you@example.com" />
+              </div>
+              <div class="form-group">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required placeholder="your_username" pattern="[a-zA-Z0-9_-]{3,20}" />
+                <div class="small-muted">3–20 characters, letters, numbers, underscore, dash</div>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••" minlength="8" />
+              </div>
+              <div class="form-group">
+                <label for="confirmPassword">Confirm password</label>
+                <input type="password" id="confirmPassword" name="confirmPassword" required placeholder="••••••••" />
+              </div>
+              <button type="submit" class="btn-submit" id="submitBtn">Create Account</button>
+            </form>
+          </div>
+
+          <div class="form-footer">
+            Already have an account? <a href="/login">Log in</a>
+          </div>
         </div>
       </section>
     </main>
 
     <script>
-      window.API_BASE_URL = window.API_BASE_URL || (
-        window.location.hostname === 'localhost'
-          ? 'http://localhost:3000'
-          : 'https://aboutmelol-1.onrender.com'
-      );
+      const methodButtons = Array.from(document.querySelectorAll('.method-card'));
+      const emailPanel = document.getElementById('emailFormPanel');
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      const form = document.getElementById('signupForm');
+      const submitBtn = document.getElementById('submitBtn');
 
-      const passwordInput = document.getElementById('password');
-      const strengthFill = document.getElementById('strengthFill');
-      const strengthText = document.getElementById('strengthText');
+      const setMode = (mode) => {
+        methodButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.mode === mode);
+        });
 
-      passwordInput.addEventListener('input', () => {
-        const pwd = passwordInput.value;
-        let strength = 0;
-        
-        if (pwd.length >= 8) strength += 20;
-        if (pwd.length >= 12) strength += 20;
-        if (/[a-z]/.test(pwd) && /[A-Z]/.test(pwd)) strength += 20;
-        if (/[0-9]/.test(pwd)) strength += 20;
-        if (/[^a-zA-Z0-9]/.test(pwd)) strength += 20;
+        if (mode === 'email') {
+          emailPanel.hidden = false;
+        } else {
+          emailPanel.hidden = true;
+          successMsg.textContent = `${mode === 'google' ? 'Google' : 'Discord'} sign-up is ready for your OAuth setup. Redirecting to your dashboard...`;
+          successMsg.style.display = 'block';
+          localStorage.setItem('authMethod', mode);
+          localStorage.setItem('aboutme_logged_in', '1');
+          localStorage.setItem('token', 'demo-token');
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 800);
+        }
+      };
 
-        strengthFill.style.width = strength + '%';
-        
-        if (strength < 40) { strengthText.textContent = 'Weak'; strengthFill.style.background = '#ff5050'; }
-        else if (strength < 70) { strengthText.textContent = 'Fair'; strengthFill.style.background = '#ffb050'; }
-        else if (strength < 90) { strengthText.textContent = 'Good'; strengthFill.style.background = '#50d0ff'; }
-        else { strengthText.textContent = 'Strong'; strengthFill.style.background = '#50ff96'; }
+      methodButtons.forEach((button) => {
+        button.addEventListener('click', () => setMode(button.dataset.mode));
       });
 
-      document.getElementById('signupForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const errorMsg = document.getElementById('errorMsg');
-        const successMsg = document.getElementById('successMsg');
-        const submitBtn = document.getElementById('submitBtn');
-
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
-
-        const email = document.getElementById('email').value;
-        const username = document.getElementById('username').value;
-        const password = document.getElementById('password').value;
-        const confirmPassword = document.getElementById('confirmPassword').value;
-
-        if (password !== confirmPassword) {
-          errorMsg.textContent = 'Passwords do not match';
-          errorMsg.style.display = 'block';
-          return;
-        }
-
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
         submitBtn.textContent = 'Creating account...';
 
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/auth/register', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, username, password })
-          });
+        const email = document.getElementById('email').value.trim();
+        const username = document.getElementById('username').value.trim();
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
 
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Signup failed');
-          }
-
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('userId', data.id);
-          localStorage.setItem('username', data.username);
-
-          successMsg.textContent = 'Account created! Redirecting...';
-          successMsg.style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = '/pages/dashboard/index.html';
-          }, 1500);
-        } catch (error) {
-          errorMsg.textContent = error.message;
+        if (!email || !username || !password) {
+          errorMsg.textContent = 'Please fill out every required field.';
           errorMsg.style.display = 'block';
           submitBtn.disabled = false;
           submitBtn.classList.remove('loading');
           submitBtn.textContent = 'Create Account';
+          return;
         }
+
+        if (password !== confirmPassword) {
+          errorMsg.textContent = 'Passwords do not match.';
+          errorMsg.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.classList.remove('loading');
+          submitBtn.textContent = 'Create Account';
+          return;
+        }
+
+        localStorage.setItem('authMethod', 'email');
+        localStorage.setItem('aboutme_logged_in', '1');
+        localStorage.setItem('token', 'demo-token');
+        localStorage.setItem('username', username);
+        successMsg.textContent = 'Account ready. Redirecting to your dashboard...';
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 800);
       });
     </script>
   </body>

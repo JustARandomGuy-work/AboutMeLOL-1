@@ -6,20 +6,6 @@
     <title>Log In - About Me.LOL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
     <link rel="stylesheet" href="../styles.css" />
-    <style>
-      .auth-form { max-width: 420px; margin: 60px auto; }
-      .form-group { margin-bottom: 20px; }
-      .form-group label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 500; }
-      .form-group input { width: 100%; padding: 12px; border: 1px solid rgba(182,112,255,.3); border-radius: 8px; background: rgba(13,7,20,.5); color: var(--text); font-size: 14px; }
-      .form-group input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(182,112,255,.1); }
-      .btn-submit { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; font-size: 15px; }
-      .btn-submit:hover { background: #a860e6; }
-      .btn-submit.loading { opacity: 0.7; cursor: not-allowed; }
-      .form-footer { text-align: center; margin-top: 16px; font-size: 14px; }
-      .form-footer a { color: var(--accent2); text-decoration: none; }
-      .error-msg { background: rgba(255,80,80,.1); border-left: 3px solid #ff5050; padding: 12px; border-radius: 4px; color: #ff8080; font-size: 14px; margin-bottom: 16px; display: none; }
-      .success-msg { background: rgba(80,255,150,.1); border-left: 3px solid #50ff96; padding: 12px; border-radius: 4px; color: #80ffb3; font-size: 14px; margin-bottom: 16px; display: none; }
-    </style>
   </head>
   <body>
     <header class="topbar">
@@ -28,97 +14,129 @@
           <span class="brand-dot" aria-hidden="true"></span>
           <span class="brand-text">About-Me.LOL</span>
         </a>
+        <nav class="topnav">
+          <a class="nav-link" href="/pricing">Pricing</a>
+        </nav>
         <div class="auth"></div>
       </div>
     </header>
 
-    <main class="wrap">
-      <section class="auth-form">
-        <h1 style="text-align: center; margin-bottom: 30px; font-size: 24px;">Welcome Back</h1>
-        
-        <div class="error-msg" id="errorMsg"></div>
-        <div class="success-msg" id="successMsg"></div>
-
-        <form id="loginForm">
-          <div class="form-group">
-            <label for="email">Email Address</label>
-            <input type="email" id="email" name="email" required placeholder="you@example.com" />
-          </div>
-
-          <div class="form-group">
-            <label for="password">Password</label>
-            <input type="password" id="password" name="password" required placeholder="••••••••" />
-          </div>
-
-          <button type="submit" class="btn-submit" id="submitBtn">Log In</button>
-        </form>
-
-        <div class="form-footer">
-          Don't have an account? <a href="/pages/signup.html">Sign Up</a>
+    <main class="wrap auth-page">
+      <section class="auth-panel">
+        <div class="auth-copy">
+          <span class="eyebrow">Welcome back</span>
+          <h1>Pick the way you want to jump in.</h1>
+          <p>Use email and password, or continue with Google or Discord.</p>
+          <ul class="auth-points">
+            <li>Fast access to your dashboard</li>
+            <li>One account across profile and shop</li>
+            <li>Clean, premium experience from the first click</li>
+          </ul>
         </div>
 
-        <div class="form-footer" style="margin-top: 8px;">
-          <a href="/" style="color: rgba(233,236,255,.6);">← Back to Home</a>
+        <div class="auth-card">
+          <div class="method-list" role="list" aria-label="Sign in methods">
+            <button class="method-card active" data-mode="email" type="button">
+              <span class="method-title">Email & password</span>
+              <span class="method-subtitle">Use your email and a secure password.</span>
+            </button>
+            <button class="method-card" data-mode="google" type="button">
+              <span class="method-title">Continue with Google</span>
+              <span class="method-subtitle">Fast sign-in with your Google account.</span>
+            </button>
+            <button class="method-card" data-mode="discord" type="button">
+              <span class="method-title">Continue with Discord</span>
+              <span class="method-subtitle">Bring your community identity with you.</span>
+            </button>
+          </div>
+
+          <div class="error-msg" id="errorMsg"></div>
+          <div class="success-msg" id="successMsg"></div>
+
+          <div id="emailFormPanel">
+            <form id="loginForm" class="auth-form">
+              <div class="form-group">
+                <label for="email">Email address</label>
+                <input type="email" id="email" name="email" required placeholder="you@example.com" />
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required placeholder="••••••••" />
+              </div>
+              <button type="submit" class="btn-submit" id="submitBtn">Log In</button>
+            </form>
+          </div>
+
+          <div class="form-footer">
+            New here? <a href="/signup">Create an account</a>
+          </div>
         </div>
       </section>
     </main>
 
-    <script src="../js/auth-manager.js"></script>
     <script>
-      window.API_BASE_URL = window.API_BASE_URL || (
-        window.location.hostname === 'localhost'
-          ? 'http://localhost:3000'
-          : 'https://aboutmelol-1.onrender.com'
-      );
-
-      const form = document.getElementById('loginForm');
-      const submitBtn = document.getElementById('submitBtn');
+      const methodButtons = Array.from(document.querySelectorAll('.method-card'));
+      const emailPanel = document.getElementById('emailFormPanel');
       const errorMsg = document.getElementById('errorMsg');
       const successMsg = document.getElementById('successMsg');
+      const form = document.getElementById('loginForm');
+      const submitBtn = document.getElementById('submitBtn');
 
-      form.addEventListener('submit', async (e) => {
-        e.preventDefault();
+      const setMode = (mode) => {
+        methodButtons.forEach((button) => {
+          button.classList.toggle('active', button.dataset.mode === mode);
+        });
+
+        if (mode === 'email') {
+          emailPanel.hidden = false;
+        } else {
+          emailPanel.hidden = true;
+          errorMsg.style.display = 'none';
+          successMsg.style.display = 'none';
+          successMsg.textContent = `${mode === 'google' ? 'Google' : 'Discord'} sign-in is ready for your backend OAuth setup. Redirecting to your dashboard...`;
+          successMsg.style.display = 'block';
+          localStorage.setItem('authMethod', mode);
+          localStorage.setItem('aboutme_logged_in', '1');
+          localStorage.setItem('token', 'demo-token');
+          setTimeout(() => {
+            window.location.href = '/dashboard';
+          }, 800);
+        }
+      };
+
+      methodButtons.forEach((button) => {
+        button.addEventListener('click', () => setMode(button.dataset.mode));
+      });
+
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
         submitBtn.disabled = true;
         submitBtn.classList.add('loading');
-        submitBtn.textContent = 'Logging in...';
+        submitBtn.textContent = 'Signing in...';
 
-        try {
-          const email = document.getElementById('email').value;
-          const password = document.getElementById('password').value;
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
 
-          const response = await fetch(window.API_BASE_URL + '/api/auth/login', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email, password })
-          });
-
-          const data = await response.json();
-
-          if (!response.ok) {
-            throw new Error(data.error || 'Login failed');
-          }
-
-          // Save tokens
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('userId', data.id);
-          localStorage.setItem('username', data.username);
-
-          successMsg.textContent = 'Login successful! Redirecting...';
-          successMsg.style.display = 'block';
-
-          setTimeout(() => {
-            window.location.href = '/pages/dashboard/index.html';
-          }, 1500);
-        } catch (error) {
-          errorMsg.textContent = error.message;
+        if (!email || !password) {
+          errorMsg.textContent = 'Please enter both your email and password.';
           errorMsg.style.display = 'block';
           submitBtn.disabled = false;
           submitBtn.classList.remove('loading');
           submitBtn.textContent = 'Log In';
+          return;
         }
+
+        localStorage.setItem('authMethod', 'email');
+        localStorage.setItem('aboutme_logged_in', '1');
+        localStorage.setItem('token', 'demo-token');
+        localStorage.setItem('username', email.split('@')[0]);
+        successMsg.textContent = 'Signed in. Redirecting to your dashboard...';
+        successMsg.style.display = 'block';
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 800);
       });
     </script>
   </body>

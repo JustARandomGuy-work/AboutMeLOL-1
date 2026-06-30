@@ -6,34 +6,6 @@
     <title>Pricing - About Me.LOL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
     <link rel="stylesheet" href="../styles.css" />
-    <style>
-      .pricing-header { text-align: center; padding: 60px 20px 40px; }
-      .pricing-header h1 { font-size: 42px; margin: 0 0 12px; }
-      .pricing-header p { color: rgba(233,236,255,.6); font-size: 18px; max-width: 600px; margin: 0 auto; }
-      .pricing-grid { max-width: 1000px; margin: 40px auto; padding: 0 20px 60px; display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px; }
-      .pricing-card { background: rgba(182,112,255,.08); border: 1px solid rgba(182,112,255,.2); border-radius: 16px; padding: 40px 30px; transition: all 200ms; }
-      .pricing-card.featured { border-color: var(--accent); box-shadow: 0 0 30px rgba(182,112,255,.3); transform: scale(1.05); }
-      .pricing-card.featured::before { content: "MOST POPULAR"; position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 700; }
-      .pricing-card { position: relative; }
-      .pricing-name { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
-      .pricing-desc { font-size: 14px; color: rgba(233,236,255,.6); margin: 0 0 20px; }
-      .pricing-price { font-size: 48px; font-weight: 700; margin: 0 0 4px; }
-      .pricing-price span { font-size: 20px; color: rgba(233,236,255,.6); }
-      .pricing-features { list-style: none; padding: 0; margin: 30px 0; }
-      .pricing-features li { padding: 10px 0; border-bottom: 1px solid rgba(182,112,255,.1); display: flex; align-items: center; gap: 10px; font-size: 14px; }
-      .pricing-features li:before { content: "✓"; color: var(--accent2); font-weight: 700; }
-      .pricing-cta { width: 100%; padding: 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 15px; }
-      .pricing-cta:hover { background: #a860e6; }
-      .pricing-card.featured .pricing-cta { background: var(--accent2); color: #000; }
-      .pricing-card.featured .pricing-cta:hover { background: #5ae0f0; }
-      .faq-section { max-width: 800px; margin: 60px auto; padding: 0 20px 40px; }
-      .faq-title { text-align: center; font-size: 32px; margin: 0 0 40px; }
-      .faq-item { margin-bottom: 20px; background: rgba(182,112,255,.05); border: 1px solid rgba(182,112,255,.15); border-radius: 12px; }
-      .faq-question { padding: 20px; cursor: pointer; font-weight: 600; display: flex; justify-content: space-between; align-items: center; }
-      .faq-question:hover { background: rgba(182,112,255,.1); }
-      .faq-answer { padding: 0 20px 20px; color: rgba(233,236,255,.7); max-height: 0; overflow: hidden; transition: max-height 300ms ease; }
-      .faq-item.open .faq-answer { max-height: 500px; }
-    </style>
   </head>
   <body>
     <header class="topbar">
@@ -44,106 +16,90 @@
         </a>
         <nav class="topnav" aria-label="Top navigation">
           <a class="nav-link" href="/">Home</a>
-          <a class="nav-link" href="/pages/shop.html">Shop</a>
+          <a class="nav-link" href="/login">Login</a>
         </nav>
         <div class="auth" id="auth"></div>
       </div>
     </header>
 
-    <div class="pricing-header">
-      <h1>Simple, Transparent Pricing</h1>
-      <p>Everything you need to build your ultimate profile. No hidden fees.</p>
-    </div>
-
-    <div class="pricing-grid">
-      <div class="pricing-card">
-        <h3 class="pricing-name">Starter</h3>
-        <p class="pricing-desc">For everyone</p>
-        <div class="pricing-price">Free</div>
-        <button class="pricing-cta" onclick="handlePricing('starter')">Get Started</button>
-        <ul class="pricing-features">
-          <li>Unlimited links</li>
-          <li>Basic profile customization</li>
-          <li>Analytics dashboard</li>
-          <li>Profile views & click tracking</li>
-          <li>Community support</li>
-        </ul>
+    <main class="wrap pricing-page">
+      <div class="pricing-header">
+        <span class="eyebrow">Flexible plans for creators</span>
+        <h1>Choose the level of polish you want.</h1>
+        <p>Everything you need to launch a profile, grow an audience, and manage your online presence with less friction.</p>
       </div>
 
-      <div class="pricing-card featured">
-        <h3 class="pricing-name">Pro</h3>
-        <p class="pricing-desc">For creators</p>
-        <div class="pricing-price">$4.99<span>/month</span></div>
-        <button class="pricing-cta" onclick="handlePricing('pro')">Start Free Trial</button>
-        <ul class="pricing-features">
-          <li>Everything in Starter</li>
-          <li>Custom domain support</li>
-          <li>Advanced analytics</li>
-          <li>Priority email support</li>
-          <li>5x cosmetics discount</li>
-          <li>Profile templates</li>
-        </ul>
-      </div>
-
-      <div class="pricing-card">
-        <h3 class="pricing-name">Elite</h3>
-        <p class="pricing-desc">For influencers</p>
-        <div class="pricing-price">$9.99<span>/month</span></div>
-        <button class="pricing-cta" onclick="handlePricing('elite')">Upgrade Now</button>
-        <ul class="pricing-features">
-          <li>Everything in Pro</li>
-          <li>Unlimited custom domains</li>
-          <li>API access</li>
-          <li>24/7 phone support</li>
-          <li>All cosmetics included</li>
-          <li>White-label option</li>
-        </ul>
-      </div>
-    </div>
-
-    <div class="faq-section">
-      <h2 class="faq-title">Frequently Asked Questions</h2>
-
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFAQ(event)">
-          <span>Can I cancel anytime?</span>
-          <span>+</span>
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3 class="pricing-name">Starter</h3>
+          <p class="pricing-desc">For your first profile</p>
+          <div class="pricing-price">Free</div>
+          <button class="pricing-cta" onclick="handlePricing('starter')">Get Started</button>
+          <ul class="pricing-features">
+            <li>Unlimited links</li>
+            <li>Basic profile customization</li>
+            <li>Analytics dashboard</li>
+            <li>Community support</li>
+          </ul>
         </div>
-        <div class="faq-answer">Yes, you can cancel your subscription anytime with no penalties. Your profile will revert to Starter features.</div>
+
+        <div class="pricing-card featured">
+          <h3 class="pricing-name">Pro</h3>
+          <p class="pricing-desc">For creators growing fast</p>
+          <div class="pricing-price">$4.99<span>/month</span></div>
+          <button class="pricing-cta" onclick="handlePricing('pro')">Start Free Trial</button>
+          <ul class="pricing-features">
+            <li>Everything in Starter</li>
+            <li>Custom domain support</li>
+            <li>Advanced analytics</li>
+            <li>Priority support</li>
+            <li>Profile templates</li>
+          </ul>
+        </div>
+
+        <div class="pricing-card">
+          <h3 class="pricing-name">Elite</h3>
+          <p class="pricing-desc">For serious brands</p>
+          <div class="pricing-price">$9.99<span>/month</span></div>
+          <button class="pricing-cta" onclick="handlePricing('elite')">Upgrade Now</button>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>Unlimited custom domains</li>
+            <li>API access</li>
+            <li>24/7 support</li>
+            <li>White-label option</li>
+          </ul>
+        </div>
       </div>
 
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFAQ(event)">
-          <span>Do you offer refunds?</span>
-          <span>+</span>
-        </div>
-        <div class="faq-answer">Yes, we offer a 7-day money-back guarantee on all paid plans. No questions asked.</div>
-      </div>
+      <div class="faq-section">
+        <h2 class="faq-title">Frequently asked questions</h2>
 
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFAQ(event)">
-          <span>What payment methods do you accept?</span>
-          <span>+</span>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>Can I cancel anytime?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">Yes. You can cancel your plan at any time and keep your profile live on the free tier.</div>
         </div>
-        <div class="faq-answer">We accept all major credit cards, PayPal, and Apple Pay through our secure payment processor.</div>
-      </div>
 
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFAQ(event)">
-          <span>Can I upgrade or downgrade anytime?</span>
-          <span>+</span>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>Do you offer refunds?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">Yes, all paid plans include a 7-day money-back guarantee.</div>
         </div>
-        <div class="faq-answer">Absolutely! Change your plan at any time and we'll prorate the difference on your next billing cycle.</div>
-      </div>
 
-      <div class="faq-item">
-        <div class="faq-question" onclick="toggleFAQ(event)">
-          <span>Do you have team plans?</span>
-          <span>+</span>
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>What payment methods do you accept?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">We accept cards and PayPal through our secure payment processor.</div>
         </div>
-        <div class="faq-answer">Contact our sales team for custom enterprise pricing and team management features.</div>
       </div>
-    </div>
+    </main>
 
     <script>
       function toggleFAQ(event) {
@@ -155,16 +111,15 @@
       function handlePricing(plan) {
         const token = localStorage.getItem('token');
         if (!token) {
-          window.location.href = '/pages/signup.html';
+          window.location.href = '/signup';
           return;
         }
-        alert('Pricing page - ' + plan + ' plan selected. Coming soon!');
+        window.alert('Selected plan: ' + plan + '. Checkout will be added soon.');
       }
 
-      // Auth
       const token = localStorage.getItem('token');
       if (token) {
-        document.getElementById('auth').innerHTML = `<a href="/pages/dashboard/index.html" class="auth-link">Dashboard</a>`;
+        document.getElementById('auth').innerHTML = '<a href="/dashboard" class="auth-link">Dashboard</a>';
       }
     </script>
   </body>
