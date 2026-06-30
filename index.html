@@ -1,117 +1,92 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About Me.LOL — Premium identity pages</title>
-    <meta
-      name="description"
-      content="About Me.LOL gives creators a polished home for links, stories, and analytics."
-    />
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
-    <link rel="stylesheet" href="./styles.css" />
-  </head>
-  <body>
-    <div class="bg-wrapper"></div>
+import express, { Router, Request, Response } from 'express';
+import { db } from '../index.js';
+import { users, profiles } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import auth, { AuthRequest } from '../middleware/auth.js';
 
-    <header class="topbar">
-      <div class="topbar-inner">
-        <a class="brand" href="/" aria-label="About-Me.LOL">
-          <span class="brand-dot" aria-hidden="true"></span>
-          <span class="brand-text">About-Me.LOL</span>
-        </a>
+const router = Router();
 
-        <nav class="topnav" aria-label="Top navigation">
-          <a class="nav-link" href="#showcase">Showcase</a>
-          <a class="nav-link" href="/pricing">Pricing</a>
-          <a class="nav-link" href="#community">Community</a>
-        </nav>
+router.get('/me', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, req.userId!)
+    });
 
-        <div class="auth" aria-label="Authentication">
-          <a class="auth-link" href="/dashboard" id="authDashboard" hidden>Dashboard</a>
-          <div class="auth-signed-out" id="authSignedOut">
-            <a class="auth-link login-link" href="/login" id="authLogin">Log In</a>
-            <a class="auth-link primary" href="/signup" id="authSignup">Join Free</a>
-          </div>
-        </div>
-      </div>
-    </header>
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-    <main class="wrap" id="top">
-      <section class="hero landing">
-        <div class="hero-shell">
-          <div class="hero-copy">
-            <span class="eyebrow">A cleaner home for your online identity</span>
-            <h1 class="headline">
-              <span class="headline-line">Own your story.</span>
-              <span class="headline-line">Share it beautifully.</span>
-            </h1>
-            <p class="lead">
-              Build a profile people remember, connect your socials, show your work, and grow with analytics that feel sharp and simple.
-            </p>
-            <div class="hero-badges" aria-label="Highlights">
-              <span class="hero-pill">⚡ Fast setup</span>
-              <span class="hero-pill">📈 Live analytics</span>
-              <span class="hero-pill">🎨 Custom presentation</span>
-            </div>
-            <div class="cta" aria-label="Primary actions">
-              <a class="btn primary" href="/signup">Start free</a>
-              <a class="btn secondary" href="/pricing">See pricing</a>
-            </div>
-          </div>
+    res.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-          <div class="hero-panel" aria-hidden="true">
-            <div class="panel-window">
-              <div class="panel-topbar">
-                <span class="win-dot win-dot-red"></span>
-                <span class="win-dot win-dot-yellow"></span>
-                <span class="win-dot win-dot-green"></span>
-              </div>
-              <div class="panel-body">
-                <div class="mini-card profile-card">
-                  <div class="mini-avatar"></div>
-                  <div class="mini-stack">
-                    <div class="mini-pill"></div>
-                    <div class="mini-pill short"></div>
-                    <div class="mini-pill tiny"></div>
-                  </div>
-                </div>
-                <div class="mini-card stat-card">
-                  <div class="stat-label">Weekly reach</div>
-                  <div class="stat-value">+184%</div>
-                  <div class="mini-chart">
-                    <span></span><span></span><span></span><span></span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
+router.get('/:userId', async (req: Request, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, req.params.userId)
+    });
 
-        <section class="feature-grid" id="showcase">
-          <article class="feature-card">
-            <h3>Design that feels premium</h3>
-            <p>Every page is shaped to feel intentional, with subtle depth and a refined dark palette.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Three ways to enter</h3>
-            <p>Choose email, Google, or Discord and jump into your dashboard with the same smooth flow.</p>
-          </article>
-          <article class="feature-card">
-            <h3>Built to grow with you</h3>
-            <p>From first profile to full creator hub, the experience stays clean and focused as you scale.</p>
-          </article>
-        </section>
-      </section>
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
-      <footer class="footer">
-        <span>© <span id="year"></span> about-me.lol</span>
-        <span class="footer-right">
-          <a href="#" class="footer-link" id="copyDomain">Copy domain</a>
-        </span>
-      </footer>
-    </main>
+    res.json({
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-    <script src="./app.js"></script>
-  </body>
-</html>
+router.get('/check-username/:username', async (req: Request, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.username, req.params.username)
+    });
+
+    res.json({ available: !user });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.put('/:userId', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userId !== req.params.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
+
+    const { email } = req.body;
+
+    if (email) {
+      const existing = await db.query.users.findFirst({
+        where: eq(users.email, email)
+      });
+
+      if (existing && existing.id !== req.userId) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
+
+    const updated = await db.update(users)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(users.id, req.userId))
+      .returning();
+
+    res.json(updated[0]);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;

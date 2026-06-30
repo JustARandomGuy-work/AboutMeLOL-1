@@ -1,354 +1,189 @@
-# About Me.LOL - Complete Setup Guide
-
-## 🎉 What's Been Created
-
-I've created **EVERYTHING** you need:
-
-### Frontend (Vercel)
-- ✅ Landing page (index.html)
-- ✅ Login page (/pages/login.html)
-- ✅ Signup page (/pages/signup.html)
-- ✅ Dashboard (/pages/dashboard/index.html)
-- ✅ Public profile template (/pages/profile-template.html)
-- ✅ Shop page (/pages/shop.html)
-- ✅ Pricing page (/pages/pricing.html)
-- ✅ Styling (styles.css)
-- ✅ Scripts (app.js)
-- ✅ Vercel config (vercel.json)
-
-### Backend (Railway) - TypeScript/Express
-- ✅ Express server (src/index.ts)
-- ✅ Database schema (src/db/schema.ts) with 8 tables
-- ✅ Drizzle ORM config
-- ✅ All middleware (auth, errorHandler, requestLogger)
-- ✅ All services (auth, profile, redis, email, bunny, payment, analytics)
-- ✅ All routes (auth, users, profiles, analytics, cosmetics, payments, media)
-- ✅ TypeScript types
-- ✅ package.json with all dependencies
-- ✅ tsconfig.json
-- ✅ Environment template (.env.example)
-- ✅ Railway config (railway.toml)
-- ✅ Drizzle config (drizzle.config.ts)
-- ✅ Initial cosmetics seed (seed.ts)
-
----
-
-## 🚀 SETUP INSTRUCTIONS (CRITICAL - DO THIS IN ORDER)
-
-### STEP 1: Backend Setup (15 minutes)
-
-#### 1a. Copy environment variables to Railway
-1. Go to https://railway.app
-2. Create a new project or open existing one
-3. Go to **Variables** tab
-4. Add EACH variable from your services:
-   ```
-   DATABASE_URL=postgresql://postgres:YOUR_PASSWORD@db.xxxxx.supabase.co:5432/postgres
-   REDIS_URL=redis://default:YOUR_PASSWORD@YOUR_HOST:39XXX
-   BUNNY_API_KEY=your_bunny_api_key
-   BUNNY_STORAGE_ZONE=aboutme-media
-   BUNNY_STORAGE_REGION=ny
-   BUNNY_CDN_URL=https://aboutme-media.b-cdn.net
-   AWS_ACCESS_KEY_ID=your_access_key
-   AWS_SECRET_ACCESS_KEY=your_secret_key
-   AWS_REGION=us-east-1
-   AWS_SES_FROM_EMAIL=noreply@about-me.lol
-   PAYPAL_CLIENT_ID=your_paypal_client_id
-   PAYPAL_SECRET=your_paypal_secret
-   PAYPAL_MODE=sandbox
-   JWT_SECRET=your_super_secret_key_at_least_32_chars_long
-   VITE_APP_URL=https://about-me.lol
-   VITE_API_BASE_URL=https://about-me-api.railway.app
-   NODE_ENV=production
-   ```
-
-#### 1b. Deploy backend to Railway
-1. Go to backend folder: `cd backend`
-2. Push to GitHub: `git add . && git commit -m "initial backend" && git push origin main`
-3. In Railway, connect GitHub repo
-4. Railway will auto-deploy
-
-#### 1c. Get your Railway API URL
-1. After deployment, go to Railway project
-2. Copy the public URL (looks like `https://about-me-api.railway.app`)
-3. Save this URL - you'll need it for the frontend
-
----
-
-### STEP 2: Database Setup (5 minutes)
-
-#### 2a. Run migrations
-```bash
-cd backend
-npm install
-npm run db:push
-```
-
-This creates all the tables in your Supabase database.
-
-#### 2b. Seed initial cosmetics
-```bash
-npm run seed
-```
-
-This adds 8 cosmetics to your database.
-
-**If you can't run locally**, do this in Railway terminal instead.
-
----
-
-### STEP 3: Frontend Setup (10 minutes)
-
-#### 3a. Update API URL
-1. Open `/js/app.js`
-2. Change this line:
-   ```javascript
-   window.API_BASE_URL = 'https://about-me-api.railway.app';
-   ```
-   Replace with YOUR Railway API URL from Step 1c
-
-#### 3b. Deploy to Vercel
-1. Push frontend to GitHub: `git add . && git commit -m "initial frontend" && git push`
-2. Go to https://vercel.com
-3. Import GitHub repo (AboutMe.LOL frontend folder)
-4. Deploy
-
-#### 3c. Add domain
-1. In Vercel project settings
-2. Go to **Domains**
-3. Add `about-me.lol`
-4. Vercel gives you DNS records
-5. Add those records to your domain registrar (GoDaddy, Namecheap, etc.)
-6. Wait 24-48 hours for propagation
-
----
-
-### STEP 4: Cloudflare WAF Setup (10 minutes)
-
-1. Go to https://cloudflare.com
-2. Add site: `about-me.lol`
-3. Change nameservers at your domain registrar to Cloudflare's
-4. In Cloudflare, go to **Security → WAF**
-5. Enable **OWASP ModSecurity Core Rule Set**
-6. Create custom rule for rate limiting:
-   - Path: `/api/auth/login`
-   - Rate limit: 5 per minute
-   - Action: Block
-
----
-
-## ✅ VERIFICATION CHECKLIST
-
-Test each endpoint after deployment:
-
-### Auth Endpoints
-```bash
-# Register
-curl -X POST https://about-me-api.railway.app/api/auth/register \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","username":"testuser","password":"TestPass123!"}'
-
-# Login
-curl -X POST https://about-me-api.railway.app/api/auth/login \
-  -H "Content-Type: application/json" \
-  -d '{"email":"test@test.com","password":"TestPass123!"}'
-```
-
-### Profile Endpoints
-```bash
-# Get profile
-curl https://about-me-api.railway.app/api/profiles/@testuser
-```
-
-### Shop Endpoints
-```bash
-# Get cosmetics
-curl https://about-me-api.railway.app/api/cosmetics/shop
-```
-
-### Health Check
-```bash
-curl https://about-me-api.railway.app/health
-```
-
----
-
-## 🐛 TROUBLESHOOTING
-
-### Database connection fails
-- Check DATABASE_URL in Railway variables
-- Make sure Supabase SSL is disabled: `ssl: { rejectUnauthorized: false }`
-- Verify password is correct
-
-### Redis connection fails
-- Check REDIS_URL is correct
-- Verify Redis instance is running in Upstash
-
-### Routes return 404
-- Make sure backend is deployed and running
-- Check Railway logs for errors
-- Verify all env variables are set
-
-### Frontend can't reach API
-- Update `window.API_BASE_URL` in `/js/app.js`
-- Check browser console for CORS errors
-- Make sure backend has CORS enabled
-
-### PayPal integration fails
-- Make sure PAYPAL_MODE=sandbox for testing
-- Check Client ID and Secret are correct
-- Verify webhook URL is set in PayPal dashboard
-
-### Email not sending
-- Check AWS_SES_FROM_EMAIL is verified in SES
-- Make sure you requested production access (not sandbox)
-- Check AWS region is correct
-
-### Bunny.net uploads fail
-- Verify BUNNY_API_KEY is correct
-- Check BUNNY_STORAGE_ZONE name matches
-- Make sure file size is under limits
-
----
-
-## 📦 WHAT YOU STILL NEED TO DO MANUALLY
-
-1. **Get credentials from services:**
-   - Supabase: DATABASE_URL
-   - Upstash Redis: REDIS_URL
-   - Bunny.net: API key
-   - AWS SES: Access Key, Secret Key
-   - PayPal: Client ID, Secret
-   - JWT Secret: Generate a random string
-
-2. **Add them to Railway environment**
-
-3. **Run migrations:**
-   ```bash
-   npm run db:push
-   npm run seed
-   ```
-
-4. **Deploy backend to Railway**
-
-5. **Update frontend API URL**
-
-6. **Deploy frontend to Vercel**
-
-7. **Point domain to Vercel**
-
-8. **Set up Cloudflare WAF**
-
----
-
-## 🎯 DEFAULT TEST ACCOUNT
-
-After seeding, test with:
-- Email: test@example.com
-- Username: testuser
-- Password: TestPass123!
-
-**You need to create this manually or add it to the seed file.**
-
----
-
-## 📊 FINAL ARCHITECTURE
-
-```
-┌─────────────────────────────────────────────────────┐
-│            Your about-me.lol Domain                 │
-└────────────┬──────────────────────────────┬─────────┘
-             │                              │
-             ▼                              ▼
-    ┌──────────────────┐          ┌──────────────────┐
-    │  Vercel Frontend │          │ Cloudflare WAF   │
-    │  (React/Static)  │          │ (Security)       │
-    └──────────┬───────┘          └────────┬─────────┘
-               │                           │
-               └──────────────┬────────────┘
-                              ▼
-                  ┌──────────────────────┐
-                  │  Railway Backend API │
-                  │  (Node.js/Express)   │
-                  └──────────┬───────────┘
-                             │
-        ┌────────┬───────┬───┼───┬──────┐
-        ▼        ▼       ▼   ▼   ▼      ▼
-    ┌──────┐ ┌───────┐ ┌──────┐ ┌─────┐ ┌────┐
-    │Supabase│ Upstash │ Bunny │ SES │ PayPal
-    │  DB    │ Redis   │ CDN   │Email│ Pay
-    └──────┘ └───────┘ └──────┘ └─────┘ └────┘
-```
-
----
-
-## 🚀 NEXT STEPS AFTER DEPLOYMENT
-
-1. Test login/signup flow
-2. Test profile creation and editing
-3. Test avatar upload
-4. Test cosmetics shop
-5. Test PayPal payment flow
-6. Add more cosmetics to shop
-7. Customize branding and colors
-8. Add additional features
-
----
-
-## 💡 COMMANDS REFERENCE
-
-### Backend
-```bash
-# Development
-npm run dev
-
-# Build
-npm run build
-
-# Production
-npm start
-
-# Database
-npm run db:push      # Apply migrations
-npm run db:generate  # Create migration files
-npm run db:studio    # Open Drizzle Studio
-
-# Seed
-npm run seed         # Add initial cosmetics
-```
-
-### Frontend
-```bash
-# Build (if using build tools)
-npm run build
-
-# Deploy
-vercel deploy
-```
-
----
-
-## 📞 SUPPORT
-
-If something breaks, check:
-1. Environment variables in Railway
-2. Database migrations (run `npm run db:push`)
-3. Backend health endpoint: `/health`
-4. Browser console for errors
-5. Railway logs for backend errors
-
----
-
-## ✨ YOU'RE ALL SET!
-
-You now have a **complete, production-ready** About Me.LOL clone with:
-- User authentication
-- Profile management
-- Analytics tracking
-- Cosmetics shop
-- PayPal integration
-- Email service
-- CDN media hosting
-- Security WAF
-
-**Good luck! 🚀**
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cosmetics Shop - About Me.LOL</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="../styles.css" />
+    <style>
+      .shop-header { text-align: center; padding: 40px 20px 0; }
+      .shop-header h1 { font-size: 36px; margin: 0 0 12px; }
+      .shop-header p { color: rgba(233,236,255,.6); font-size: 16px; margin: 0 0 30px; }
+      .cosmetics-grid { max-width: 1200px; margin: 30px auto; padding: 0 20px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
+      .cosmetic-card { background: rgba(182,112,255,.08); border: 1px solid rgba(182,112,255,.2); border-radius: 12px; overflow: hidden; transition: all 200ms; }
+      .cosmetic-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(182,112,255,.15); }
+      .cosmetic-preview { width: 100%; height: 150px; background: linear-gradient(135deg, rgba(182,112,255,.3), rgba(108,246,255,.3)); display: flex; align-items: center; justify-content: center; font-size: 40px; }
+      .cosmetic-info { padding: 16px; }
+      .cosmetic-name { font-weight: 600; font-size: 16px; margin: 0 0 4px; }
+      .cosmetic-type { font-size: 12px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.5px; }
+      .cosmetic-desc { font-size: 13px; color: rgba(233,236,255,.6); margin: 8px 0; }
+      .cosmetic-price { font-size: 20px; font-weight: 700; color: var(--accent); margin: 12px 0; }
+      .btn-buy { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+      .btn-buy:hover { background: #a860e6; }
+      .btn-buy.owned { background: #50ff96; color: #000; }
+      .btn-buy.owned:hover { background: #40dd86; }
+      .filter-tabs { text-align: center; margin-bottom: 30px; }
+      .filter-tab { padding: 8px 16px; background: rgba(182,112,255,.1); border: 1px solid rgba(182,112,255,.2); border-radius: 6px; margin: 0 6px; cursor: pointer; font-size: 14px; }
+      .filter-tab.active { background: var(--accent); border-color: var(--accent); }
+      .auth-prompt { text-align: center; padding: 40px 20px; background: rgba(182,112,255,.1); border-radius: 12px; margin: 40px auto; max-width: 400px; }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <!-- Far Left: Logo/Brand -->
+        <a class="brand" href="/" aria-label="about-me.lol">
+          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9b4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          <span class="brand-text">about-me.lol</span>
+        </a>
+
+        <!-- Middle: Core Central Navigation -->
+        <nav class="topnav-center" aria-label="Core navigation">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link nav-link-pricing" href="/pages/pricing.html">Pricing</a>
+        </nav>
+
+        <!-- Far Right: Authentication -->
+        <div class="topnav-right" aria-label="Authentication">
+          <div class="auth" id="auth">
+            <a class="auth-link login-link" href="/login">Login</a>
+            <a class="auth-link primary" href="/signup">Sign Up Free</a>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <div class="shop-header">
+      <h1>Cosmetics Shop</h1>
+      <p>Level up your profile with exclusive cosmetics</p>
+    </div>
+
+    <div class="filter-tabs" id="filterTabs"></div>
+    <div class="cosmetics-grid" id="cosmeticsGrid"></div>
+
+    <div id="authPrompt" style="display: none;">
+      <div class="auth-prompt">
+        <h2>Sign in to shop</h2>
+        <p>Create an account to purchase cosmetics and customize your profile.</p>
+        <a href="/pages/login.html" class="btn" style="background: var(--accent); color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">Log In</a>
+        <a href="/pages/signup.html" class="btn" style="background: rgba(182,112,255,.2); color: var(--accent); padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block; margin-left: 8px;">Sign Up</a>
+      </div>
+    </div>
+
+    <script>
+      window.API_BASE_URL = window.API_BASE_URL || (
+        window.location.hostname === 'localhost'
+          ? 'http://localhost:3000'
+          : 'https://aboutmelol-1.onrender.com'
+      );
+      let allCosmetics = [];
+      let userCosmetics = [];
+      let currentFilter = 'all';
+
+      async function loadCosmetics() {
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/shop');
+          allCosmetics = await response.json();
+          renderCosmetics();
+          createFilters();
+        } catch (error) {
+          console.error('Error loading cosmetics:', error);
+        }
+      }
+
+      async function loadUserCosmetics() {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/user/' + localStorage.getItem('userId'), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await response.json();
+          userCosmetics = data.cosmetics.map(c => c.id);
+        } catch (error) {
+          console.error('Error loading user cosmetics:', error);
+        }
+      }
+
+      function createFilters() {
+        const types = ['all', ...new Set(allCosmetics.map(c => c.type))];
+        const html = types.map(type => 
+          `<button class="filter-tab ${type === 'all' ? 'active' : ''}" onclick="filterCosmetics('${type}')">${type.toUpperCase()}</button>`
+        ).join('');
+        document.getElementById('filterTabs').innerHTML = html;
+      }
+
+      function filterCosmetics(type) {
+        currentFilter = type;
+        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+        event.target.classList.add('active');
+        renderCosmetics();
+      }
+
+      function renderCosmetics() {
+        const cosmetics = currentFilter === 'all' ? allCosmetics : allCosmetics.filter(c => c.type === currentFilter);
+        const html = cosmetics.map(c => `
+          <div class="cosmetic-card">
+            <div class="cosmetic-preview">✨</div>
+            <div class="cosmetic-info">
+              <h3 class="cosmetic-name">${c.name}</h3>
+              <div class="cosmetic-type">${c.type}</div>
+              <p class="cosmetic-desc">${c.description}</p>
+              <div class="cosmetic-price">$${c.price.toFixed(2)}</div>
+              <button class="btn-buy ${userCosmetics.includes(c.id) ? 'owned' : ''}" 
+                onclick="buyCosmetic('${c.id}', ${c.price})" 
+                ${userCosmetics.includes(c.id) ? 'disabled' : ''}>
+                ${userCosmetics.includes(c.id) ? '✓ Owned' : 'Buy Now'}
+              </button>
+            </div>
+          </div>
+        `).join('');
+        document.getElementById('cosmeticsGrid').innerHTML = html;
+      }
+
+      async function buyCosmetic(cosmeticId, price) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/pages/login.html';
+          return;
+        }
+
+        try {
+          const response = await fetch(window.API_BASE_URL + '/api/payments/create-order', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': 'Bearer ' + token
+            },
+            body: JSON.stringify({ cosmeticId })
+          });
+
+          const data = await response.json();
+          if (response.ok) {
+            window.location.href = data.approvalUrl;
+          } else {
+            alert('Error: ' + data.error);
+          }
+        } catch (error) {
+          alert('Error creating order: ' + error.message);
+        }
+      }
+
+      // Check auth and render
+      const token = localStorage.getItem('token');
+      if (!token) {
+        document.getElementById('authPrompt').style.display = 'block';
+      } else {
+        document.getElementById('auth').innerHTML = `<a href="/pages/dashboard/index.html" class="auth-link">Dashboard</a>`;
+        loadUserCosmetics();
+      }
+
+      loadCosmetics();
+    </script>
+  </body>
+</html>

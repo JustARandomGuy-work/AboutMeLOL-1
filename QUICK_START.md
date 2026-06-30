@@ -1,447 +1,784 @@
-# About Me.LOL - QUICK START CHECKLIST
+# About Me.LOL - Complete API Reference
 
-## PROJECT SUMMARY
-You're building **guns.lol replica** called **About-Me.LOL** - a profile platform with:
-- Public profile pages (@username)
-- Link management
-- Analytics dashboard
-- Cosmetics shop (paid items)
-- Multi-service architecture
-
----
-
-## INSTANT SETUP (Today)
-
-### ✅ Frontend Foundation (Already Started!)
-- [x] Landing page (index.html)
-- [x] Base styles (styles.css)
-- [x] Scroll effects (app.js)
-- [ ] Deploy to Vercel (https://about-me.lol)
-  1. Push to GitHub
-  2. Connect to Vercel
-  3. Add domain `about-me.lol`
-
-### ✅ Documentation Created
-- [x] IMPLEMENTATION_GUIDE.md - Full architecture
-- [x] DETAILED_TODO.md - 200+ tasks organized
-- [x] SERVICES_SETUP_GUIDE.md - How to set up each service
-- [x] API_REFERENCE.md - All 35+ endpoints
-- [x] BACKEND_STARTER.md - Express server template
-- [x] BACKEND_PACKAGE.json - Dependencies
-
----
-
-## WEEK 1: MVP FOUNDATION
-
-### Day 1-2: Services Setup (~2 hours)
+## BASE URL
 ```
-Priority: MUST DO FIRST
-1. Create Supabase project → Get DATABASE_URL
-2. Create Upstash Redis → Get REDIS_URL
-3. Create Bunny.net storage → Get API key
-4. Request AWS SES access
-5. Create PayPal sandbox app → Get credentials
-```
-
-### Day 3-4: Backend Skeleton (~4 hours)
-```
-1. Create GitHub repo for backend
-2. npm init -y
-3. Copy BACKEND_PACKAGE.json dependencies
-4. Set up TypeScript
-5. Copy BACKEND_STARTER.md code
-6. Create .env with all credentials
-7. Test /health endpoint locally
-```
-
-### Day 5: Database Setup (~2 hours)
-```
-1. Create Drizzle schema (see IMPLEMENTATION_GUIDE.md)
-2. Create migration files
-3. Run: drizzle-kit push:pg
-4. Verify tables in Supabase
-```
-
-### Day 6-7: Auth System (~4 hours)
-```
-Backend:
-1. Create /auth/register endpoint
-2. Create /auth/login endpoint
-3. Create JWT middleware
-4. Hash passwords with bcryptjs
-5. Test with Postman
-
-Frontend:
-1. Create login.html page
-2. Create signup.html page
-3. Add auth-manager.js module
-4. Test registration flow
+Production: https://about-me-api.railway.app
+Development: http://localhost:3000
 ```
 
 ---
 
-## WEEK 2: CORE FEATURES
+## AUTHENTICATION ENDPOINTS
 
-### Day 8-9: User Profiles (~4 hours)
+### 1. Register User
 ```
-Backend:
-1. Create /profiles endpoints (GET, PUT)
-2. Create link management endpoints
-3. Add profile caching (Redis)
-4. Track profile visits
+POST /api/auth/register
+Content-Type: application/json
 
-Frontend:
-1. Create dashboard page
-2. Build profile editor UI
-3. Add link CRUD buttons
-4. Connect to backend API
-```
+{
+  "email": "user@example.com",
+  "username": "john_doe",
+  "password": "SecurePass123!"
+}
 
-### Day 10-11: Public Profiles (~3 hours)
-```
-Backend:
-1. Create GET /profiles/@username endpoint
-2. Add public profile view
-3. Cache with 30-min TTL
+Response (201):
+{
+  "id": "uuid-here",
+  "email": "user@example.com",
+  "username": "john_doe",
+  "token": "jwt_token_here",
+  "refreshToken": "refresh_token_here"
+}
 
-Frontend:
-1. Create [username] template page
-2. Make profile responsive
-3. Add analytics counter
+Response (400):
+{
+  "error": "Username already taken"
+}
 ```
 
-### Day 12-13: Avatar Uploads (~2 hours)
+### 2. Login
 ```
-Backend:
-1. Create Bunny.net upload service
-2. POST /profiles/{id}/avatar endpoint
-3. Delete old avatar logic
+POST /api/auth/login
+Content-Type: application/json
 
-Frontend:
-1. Add avatar picker UI
-2. Upload to /profiles/{id}/avatar
-3. Display on profile
-```
+{
+  "email": "user@example.com",
+  "password": "SecurePass123!"
+}
 
-### Day 14: Deploy MVP (~1 hour)
-```
-1. Push frontend to GitHub
-2. Deploy to Vercel
-3. Push backend to GitHub
-4. Deploy to Railway
-5. Add env variables to Railway
-6. Test full flow: login → edit profile → view public
-```
+Response (200):
+{
+  "id": "uuid-here",
+  "email": "user@example.com",
+  "username": "john_doe",
+  "token": "jwt_token_here",
+  "refreshToken": "refresh_token_here"
+}
 
----
-
-## WEEK 3: MONETIZATION
-
-### Day 15-16: Analytics (~3 hours)
-```
-Backend:
-1. Create analytics schema
-2. GET /analytics/{profileId} endpoint
-3. POST /analytics/track-visit endpoint
-4. Chart data formatting
-
-Frontend:
-1. Create analytics.html
-2. Add chart library (Chart.js)
-3. Display visits & clicks
+Response (401):
+{
+  "error": "Invalid email or password"
+}
 ```
 
-### Day 17-18: Cosmetics Shop (~4 hours)
+### 3. Refresh Token
 ```
-Backend:
-1. Create cosmetics table
-2. GET /cosmetics/shop endpoint
-3. GET /cosmetics/user/{id} endpoint
-4. POST /cosmetics/{id}/apply endpoint
+POST /api/auth/refresh
+Content-Type: application/json
 
-Frontend:
-1. Create shop.html
-2. Gallery of cosmetics
-3. Display prices
-4. "Buy Now" buttons
-```
+{
+  "refreshToken": "refresh_token_here"
+}
 
-### Day 19-20: PayPal Integration (~3 hours)
-```
-Backend:
-1. Set up PayPal SDK
-2. POST /payments/create-order endpoint
-3. POST /payments/capture endpoint
-4. Create POST /webhook/paypal endpoint
-5. Grant cosmetics on purchase
-
-Frontend:
-1. Add "Buy" buttons
-2. Redirect to PayPal
-3. Handle return URL
-4. Show "Purchased!" message
+Response (200):
+{
+  "token": "new_jwt_token",
+  "refreshToken": "new_refresh_token"
+}
 ```
 
-### Day 21: Polish & Test (~2 hours)
+### 4. Logout
 ```
-1. Test full purchase flow
-2. Fix styling issues
-3. Mobile responsiveness
-4. Browser testing
+POST /api/auth/logout
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "message": "Logged out successfully"
+}
 ```
 
----
-
-## WEEK 4: ADVANCED & LAUNCH
-
-### Day 22-23: Email Service (~2 hours)
+### 5. Verify Email
 ```
-Backend:
-1. Set up AWS SES
-2. Create email templates
-3. Verify email endpoint
-4. Password reset flow
+GET /api/auth/verify-email?code=verification_code
 
-Frontend:
-1. Add verification input
-2. Add password reset form
+Response (200):
+{
+  "message": "Email verified successfully"
+}
+
+Response (400):
+{
+  "error": "Invalid or expired verification code"
+}
 ```
 
-### Day 24-25: Security Hardening (~3 hours)
+### 6. Request Password Reset
 ```
-Backend:
-1. Add rate limiting
-2. Input validation (zod)
-3. Error handling
-4. Request logging
+POST /api/auth/reset-password-request
+Content-Type: application/json
 
-Frontend:
-1. Add loading states
-2. Error messages
-3. Prevent double-clicks
-```
+{
+  "email": "user@example.com"
+}
 
-### Day 26-27: Cloudflare Setup (~2 hours)
-```
-1. Add about-me.lol to Cloudflare
-2. Update nameservers at registrar
-3. Wait for DNS propagation
-4. Set up WAF rules
-5. Enable SSL
+Response (200):
+{
+  "message": "Password reset email sent"
+}
 ```
 
-### Day 28: LAUNCH! 🚀 (~1 hour)
+### 7. Reset Password
 ```
-1. Final testing
-2. Announce publicly
-3. Monitor for issues
-4. Celebrate! 🎉
+POST /api/auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset_token_from_email",
+  "newPassword": "NewSecurePass123!"
+}
+
+Response (200):
+{
+  "message": "Password reset successfully"
+}
 ```
 
 ---
 
-## FILE STRUCTURE TO CREATE
+## USER ENDPOINTS
 
+### 8. Get Current User
 ```
-about-me-lol/
-├── frontend/                    # Vercel deployment
-│   ├── public/
-│   │   ├── index.html          # ✅ Exists
-│   │   ├── login.html          # TODO
-│   │   ├── signup.html         # TODO
-│   │   └── favicon.ico         # ✅ Exists
-│   ├── pages/
-│   │   ├── dashboard/
-│   │   │   ├── index.html
-│   │   │   ├── analytics.html
-│   │   │   └── settings.html
-│   │   ├── [username]/
-│   │   │   └── index.html
-│   │   ├── pricing.html
-│   │   └── shop.html
-│   ├── styles/
-│   │   ├── styles.css          # ✅ Exists
-│   │   ├── dashboard.css       # TODO
-│   │   └── animations.css      # TODO
-│   ├── js/
-│   │   ├── app.js              # ✅ Exists
-│   │   ├── auth-manager.js     # TODO
-│   │   └── api-client.js       # TODO
-│   └── vercel.json
-│
-├── backend/                     # Railway deployment
-│   ├── src/
-│   │   ├── index.ts            # Express server
-│   │   ├── routes/
-│   │   │   ├── auth.ts
-│   │   │   ├── users.ts
-│   │   │   ├── profiles.ts
-│   │   │   ├── analytics.ts
-│   │   │   ├── cosmetics.ts
-│   │   │   ├── payments.ts
-│   │   │   └── media.ts
-│   │   ├── services/
-│   │   │   ├── authService.ts
-│   │   │   ├── redisService.ts
-│   │   │   ├── bunnyService.ts
-│   │   │   └── emailService.ts
-│   │   ├── db/
-│   │   │   ├── schema.ts
-│   │   │   └── client.ts
-│   │   └── middleware/
-│   │       ├── auth.ts
-│   │       └── errorHandler.ts
-│   ├── .env.example
-│   ├── package.json
-│   ├── tsconfig.json
-│   ├── railway.toml
-│   └── Dockerfile
-│
-└── docs/
-    ├── IMPLEMENTATION_GUIDE.md     # ✅ Created
-    ├── DETAILED_TODO.md             # ✅ Created
-    ├── SERVICES_SETUP_GUIDE.md      # ✅ Created
-    ├── API_REFERENCE.md             # ✅ Created
-    ├── BACKEND_STARTER.md           # ✅ Created
-    └── BACKEND_PACKAGE.json         # ✅ Created
+GET /api/users/me
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "id": "uuid",
+  "email": "user@example.com",
+  "username": "john_doe",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "emailVerified": true
+}
 ```
 
----
-
-## CRITICAL ENVIRONMENT VARIABLES
-
-### Must Have BEFORE Coding Backend
+### 9. Get User by ID
 ```
-# Copy from SERVICES_SETUP_GUIDE.md
-DATABASE_URL=postgresql://...
-REDIS_URL=redis://...
-BUNNY_API_KEY=...
-AWS_ACCESS_KEY_ID=...
-PAYPAL_CLIENT_ID=...
-JWT_SECRET=your_secret_here
+GET /api/users/{userId}
+Authorization: Bearer {token} (optional for public info)
+
+Response (200):
+{
+  "id": "uuid",
+  "username": "john_doe",
+  "profile": { ... }
+}
+```
+
+### 10. Update User Settings
+```
+PUT /api/users/{userId}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "email": "newemail@example.com",
+  "password": "NewPass123!"
+}
+
+Response (200):
+{
+  "message": "User updated successfully"
+}
+```
+
+### 11. Delete Account
+```
+DELETE /api/users/{userId}
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "message": "Account deleted successfully"
+}
+```
+
+### 12. Check Username Availability
+```
+GET /api/users/check-username?username=john_doe
+
+Response (200):
+{
+  "available": true
+}
+
+Response (200):
+{
+  "available": false
+}
 ```
 
 ---
 
-## COMMON MISTAKES TO AVOID
+## PROFILE ENDPOINTS
 
-❌ **Don't start coding without creating services first**
-- You need DATABASE_URL before any database code
+### 13. Get Profile
+```
+GET /api/profiles/{profileId}
 
-❌ **Don't commit .env files**
-- Add to .gitignore
-- Use .env.example template
+Response (200):
+{
+  "id": "uuid",
+  "userId": "uuid",
+  "bio": "I'm a creator",
+  "avatarUrl": "https://aboutme-media.b-cdn.net/avatars/user123.jpg",
+  "backgroundUrl": "https://aboutme-media.b-cdn.net/backgrounds/user123.gif",
+  "themeColor": "#b670ff",
+  "badgeTextGlow": true,
+  "badgeAnimation": false,
+  "links": [
+    {
+      "id": "uuid",
+      "title": "Twitter",
+      "url": "https://twitter.com/user",
+      "iconType": "twitter",
+      "position": 0
+    }
+  ],
+  "cosmetics": [
+    {
+      "id": "uuid",
+      "name": "Premium Glow",
+      "type": "glow"
+    }
+  ]
+}
+```
 
-❌ **Don't skip rate limiting**
-- Bots will spam /check-username endpoint
-- Add rate limiting on Day 1
+### 14. Get Public Profile by Username
+```
+GET /api/profiles/@{username}
 
-❌ **Don't use plain passwords**
-- Always hash with bcryptjs
-- Never store raw passwords
+Response (200):
+{
+  "id": "uuid",
+  "username": "john_doe",
+  "bio": "Creator",
+  "avatarUrl": "...",
+  "backgroundUrl": "...",
+  "links": [...]
+}
 
-❌ **Don't forget CORS**
-- Set CORS to your Vercel domain only
-- Add to Express middleware
+Response (404):
+{
+  "error": "Profile not found"
+}
+```
 
-❌ **Don't test in production**
-- Use PayPal sandbox mode
-- Use SES sandbox emails
-- Use test database
+### 15. Update Profile
+```
+PUT /api/profiles/{profileId}
+Authorization: Bearer {token}
+Content-Type: application/json
 
----
+{
+  "bio": "New bio text",
+  "themeColor": "#6cf6ff",
+  "badgeTextGlow": true
+}
 
-## SUCCESS METRICS (MVP)
+Response (200):
+{
+  "message": "Profile updated successfully",
+  "profile": { ... }
+}
+```
 
-### Week 1 ✅
-- [x] Landing page deployed to Vercel
-- [x] Backend health check working on Railway
-- [ ] User can sign up
+### 16. Upload Avatar
+```
+POST /api/profiles/{profileId}/avatar
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
 
-### Week 2 ✅
-- [ ] User can login
-- [ ] User can edit profile
-- [ ] Public profiles work (@username)
-- [ ] Profile visits tracked
+File: avatar.jpg (max 5MB)
 
-### Week 3 ✅
-- [ ] Analytics dashboard shows data
-- [ ] Cosmetics shop has items
-- [ ] Users can purchase cosmetics
-- [ ] PayPal integration working
+Response (200):
+{
+  "url": "https://aboutme-media.b-cdn.net/avatars/user123.jpg"
+}
+```
 
-### Week 4 ✅
-- [ ] Email verification works
-- [ ] CloudFlare WAF enabled
-- [ ] Site is live at about-me.lol
-- [ ] 10+ users registered
+### 17. Upload Background
+```
+POST /api/profiles/{profileId}/background
+Authorization: Bearer {token}
+Content-Type: multipart/form-data
 
----
+File: background.gif (max 20MB)
 
-## REFERENCE DOCS
-
-Use these files to build features:
-
-| File | Use For |
-|------|---------|
-| IMPLEMENTATION_GUIDE.md | Architecture overview, schema design |
-| DETAILED_TODO.md | Task breakdown by week/priority |
-| SERVICES_SETUP_GUIDE.md | Setting up external services |
-| API_REFERENCE.md | All 35+ endpoints & examples |
-| BACKEND_STARTER.md | Express server boilerplate |
-
----
-
-## SUPPORT RESOURCES
-
-### If You Get Stuck On...
-
-**Database Issues** → Read IMPLEMENTATION_GUIDE.md Phase 3
-**API Endpoints** → Check API_REFERENCE.md
-**External Services** → See SERVICES_SETUP_GUIDE.md
-**Architecture** → IMPLEMENTATION_GUIDE.md has full breakdown
-**Task Planning** → DETAILED_TODO.md has 200+ tasks
-
----
-
-## NEXT IMMEDIATE STEPS (Do These Today!)
-
-1. ✅ Read through this checklist
-2. ✅ Open SERVICES_SETUP_GUIDE.md
-3. ⏳ **Create Supabase project** (15 min)
-4. ⏳ **Create Upstash Redis** (5 min)
-5. ⏳ **Create Bunny.net account** (10 min)
-6. ⏳ **Create PayPal sandbox app** (10 min)
-7. ⏳ **Collect all env variables** (5 min)
-8. ⏳ **Push current frontend to GitHub** (5 min)
-
-**Total: ~50 minutes**
-
-Then you're ready to start the backend!
-
----
-
-## ESTIMATED COSTS
-
-| Phase | Cost |
-|-------|------|
-| MVP (Week 1-2) | $0 (free tiers) |
-| With users (Week 3) | $10-20/month |
-| At scale (10K users) | $50-100/month |
-| At mega scale (1M users) | $500-1000/month |
+Response (200):
+{
+  "url": "https://aboutme-media.b-cdn.net/backgrounds/user123.gif"
+}
+```
 
 ---
 
-## GO BUILD! 🚀
+## LINK MANAGEMENT ENDPOINTS
 
-You have:
-✅ Landing page started
-✅ Full architecture planned
-✅ 6 comprehensive guides
-✅ API endpoints documented
-✅ Backend starter code
-✅ Clear 4-week roadmap
+### 18. Add Link to Profile
+```
+POST /api/profiles/{profileId}/links
+Authorization: Bearer {token}
+Content-Type: application/json
 
-**Start with services, then backend, then frontend.**
+{
+  "title": "My Twitter",
+  "url": "https://twitter.com/user",
+  "iconType": "twitter",
+  "position": 0
+}
 
-Questions? Check the docs first. They have everything!
+Response (201):
+{
+  "id": "uuid",
+  "profileId": "uuid",
+  "title": "My Twitter",
+  "url": "https://twitter.com/user",
+  "iconType": "twitter",
+  "position": 0
+}
+```
+
+### 19. Update Link
+```
+PUT /api/profiles/{profileId}/links/{linkId}
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "title": "Updated Title",
+  "url": "https://new-url.com",
+  "position": 1
+}
+
+Response (200):
+{
+  "message": "Link updated successfully"
+}
+```
+
+### 20. Delete Link
+```
+DELETE /api/profiles/{profileId}/links/{linkId}
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "message": "Link deleted successfully"
+}
+```
+
+### 21. Reorder Links
+```
+POST /api/profiles/{profileId}/links/reorder
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "links": [
+    { "id": "uuid1", "position": 0 },
+    { "id": "uuid2", "position": 1 },
+    { "id": "uuid3", "position": 2 }
+  ]
+}
+
+Response (200):
+{
+  "message": "Links reordered successfully"
+}
+```
+
+---
+
+## ANALYTICS ENDPOINTS
+
+### 22. Get Profile Analytics
+```
+GET /api/analytics/{profileId}?startDate=2024-01-01&endDate=2024-01-31
+
+Response (200):
+{
+  "profileId": "uuid",
+  "totalVisits": 1250,
+  "totalClicks": 450,
+  "avgVisitTime": 45,
+  "topLinks": [
+    {
+      "linkId": "uuid",
+      "title": "Twitter",
+      "clicks": 320
+    }
+  ],
+  "visitsPerDay": [
+    { "date": "2024-01-01", "visits": 45, "clicks": 20 },
+    { "date": "2024-01-02", "visits": 52, "clicks": 18 }
+  ]
+}
+```
+
+### 23. Track Profile Visit
+```
+POST /api/analytics/track-visit
+Content-Type: application/json
+
+{
+  "profileId": "uuid",
+  "visitorIp": "192.168.1.1"
+}
+
+Response (200):
+{
+  "message": "Visit tracked"
+}
+```
+
+### 24. Track Link Click
+```
+POST /api/analytics/track-click
+Content-Type: application/json
+
+{
+  "linkId": "uuid",
+  "profileId": "uuid"
+}
+
+Response (200):
+{
+  "message": "Click tracked"
+}
+```
+
+---
+
+## COSMETICS ENDPOINTS
+
+### 25. Get Cosmetics Shop
+```
+GET /api/cosmetics/shop
+
+Response (200):
+{
+  "cosmetics": [
+    {
+      "id": "uuid",
+      "name": "Premium Glow Badge",
+      "type": "badge",
+      "price": 2.99,
+      "description": "Make your text glow",
+      "previewUrl": "https://aboutme-media.b-cdn.net/cosmetics/glow-badge.png"
+    },
+    {
+      "id": "uuid",
+      "name": "Rainbow Animation",
+      "type": "animation",
+      "price": 4.99,
+      "description": "Animated profile",
+      "previewUrl": "https://..."
+    }
+  ]
+}
+```
+
+### 26. Get User's Cosmetics
+```
+GET /api/cosmetics/user/{userId}
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "cosmetics": [
+    {
+      "id": "uuid",
+      "name": "Premium Glow Badge",
+      "type": "badge",
+      "purchasedAt": "2024-01-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+### 27. Apply Cosmetic to Profile
+```
+POST /api/cosmetics/{cosmeticId}/apply
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "profileId": "uuid"
+}
+
+Response (200):
+{
+  "message": "Cosmetic applied successfully"
+}
+
+Response (400):
+{
+  "error": "You don't own this cosmetic"
+}
+```
+
+### 28. Remove Cosmetic from Profile
+```
+DELETE /api/cosmetics/{cosmeticId}/remove
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "profileId": "uuid"
+}
+
+Response (200):
+{
+  "message": "Cosmetic removed successfully"
+}
+```
+
+---
+
+## PAYMENT ENDPOINTS
+
+### 29. Create PayPal Order
+```
+POST /api/payments/create-order
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "cosmeticId": "uuid"
+}
+
+Response (200):
+{
+  "orderId": "paypal-order-id",
+  "approvalUrl": "https://sandbox.paypal.com/checkoutnow?token=EC-..."
+}
+```
+
+### 30. Capture PayPal Payment
+```
+POST /api/payments/capture
+Authorization: Bearer {token}
+Content-Type: application/json
+
+{
+  "orderId": "paypal-order-id"
+}
+
+Response (200):
+{
+  "message": "Payment captured successfully",
+  "cosmeticId": "uuid",
+  "transactionId": "txn-123"
+}
+```
+
+### 31. PayPal Webhook
+```
+POST /webhook/paypal
+(No auth - PayPal calls this)
+
+Receives: Payment completed event
+Action: Grant cosmetic to user
+
+Response (200):
+{
+  "message": "Webhook processed"
+}
+```
+
+### 32. Get User Transactions
+```
+GET /api/payments/transactions/{userId}
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "transactions": [
+    {
+      "id": "uuid",
+      "cosmeticId": "uuid",
+      "cosmeticName": "Premium Glow",
+      "amount": 2.99,
+      "status": "completed",
+      "purchasedAt": "2024-01-15T10:00:00Z"
+    }
+  ]
+}
+```
+
+---
+
+## MEDIA ENDPOINTS
+
+### 33. Delete Media File
+```
+DELETE /api/media/{mediaId}
+Authorization: Bearer {token}
+
+Response (200):
+{
+  "message": "Media deleted successfully"
+}
+```
+
+### 34. Get Media Statistics
+```
+GET /api/media/stats/{mediaId}
+
+Response (200):
+{
+  "mediaId": "uuid",
+  "fileSize": 245600,
+  "views": 1240,
+  "downloads": 450,
+  "bandwidth": "1.2 GB"
+}
+```
+
+---
+
+## LEADERBOARD ENDPOINTS
+
+### 35. Get Leaderboard
+```
+GET /api/leaderboard?period=month&limit=100
+
+Query Params:
+- period: day, week, month, all
+- limit: 1-500 (default 100)
+
+Response (200):
+{
+  "leaderboard": [
+    {
+      "rank": 1,
+      "username": "top_creator",
+      "totalVisits": 50000,
+      "totalClicks": 12000
+    },
+    {
+      "rank": 2,
+      "username": "creator_2",
+      "totalVisits": 45000,
+      "totalClicks": 10500
+    }
+  ]
+}
+```
+
+---
+
+## ERROR RESPONSES
+
+All errors follow this format:
+
+```json
+{
+  "error": "Error message",
+  "code": "ERROR_CODE",
+  "details": "Additional information"
+}
+```
+
+### Common Error Codes
+- `400` - Bad Request (invalid input)
+- `401` - Unauthorized (missing/invalid token)
+- `403` - Forbidden (no permission)
+- `404` - Not Found
+- `409` - Conflict (username taken, etc)
+- `429` - Too Many Requests (rate limited)
+- `500` - Internal Server Error
+
+---
+
+## RATE LIMITS
+
+| Endpoint | Limit | Window |
+|----------|-------|--------|
+| /auth/register | 5 | 1 hour |
+| /auth/login | 5 | 1 hour |
+| /api/users/check-username | 30 | 1 minute |
+| /analytics/track-visit | Unlimited | - |
+| /payments/create-order | 10 | 1 hour |
+| Other endpoints | 100 | 1 minute |
+
+---
+
+## AUTHENTICATION HEADERS
+
+All endpoints marked with `Authorization: Bearer {token}` require:
+
+```
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+JWT includes:
+- User ID
+- Email
+- Username
+- Expiration (1 hour)
+
+---
+
+## EXAMPLE FRONTEND CALLS
+
+### Login
+```javascript
+const response = await fetch('https://about-me-api.railway.app/api/auth/login', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({
+    email: 'user@example.com',
+    password: 'SecurePass123!'
+  })
+});
+
+const { token } = await response.json();
+localStorage.setItem('token', token);
+```
+
+### Get Profile
+```javascript
+const response = await fetch('https://about-me-api.railway.app/api/profiles/@john_doe');
+const profile = await response.json();
+```
+
+### Update Profile
+```javascript
+const response = await fetch('https://about-me-api.railway.app/api/profiles/uuid', {
+  method: 'PUT',
+  headers: {
+    'Content-Type': 'application/json',
+    'Authorization': `Bearer ${localStorage.getItem('token')}`
+  },
+  body: JSON.stringify({
+    bio: 'New bio',
+    themeColor: '#6cf6ff'
+  })
+});
+```
+
+---
+
+## WEBHOOK EVENTS
+
+### PayPal Webhook
+Fired when payment is completed:
+```json
+{
+  "event_type": "CHECKOUT.ORDER.COMPLETED",
+  "resource": {
+    "id": "order-id",
+    "status": "COMPLETED"
+  }
+}
+```
+
+### Custom Events (Future)
+- user.profile.updated
+- cosmetic.purchased
+- profile.visited
+- link.clicked

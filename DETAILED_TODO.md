@@ -1,193 +1,139 @@
-# About Me.LOL - Detailed TODO Checklist
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pricing - About Me.LOL</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="../styles.css" />
+  </head>
+  <body>
+    <header class="topbar">
+      <div class="topbar-inner">
+        <!-- Far Left: Logo/Brand -->
+        <a class="brand" href="/" aria-label="about-me.lol">
+          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9b4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          <span class="brand-text">about-me.lol</span>
+        </a>
 
-## PHASE 1: FRONTEND FOUNDATION (Vercel)
-- [x] Create landing page (index.html) ✓
-- [x] Set up base styling (styles.css) ✓
-- [x] Add scroll effects (app.js) ✓
-- [ ] Create login page (pages/login.html)
-- [ ] Create signup page (pages/signup.html)
-- [ ] Create dashboard shell (pages/dashboard/index.html)
-- [ ] Create profile editor component (pages/dashboard/editor.html)
-- [ ] Create analytics view (pages/dashboard/analytics.html)
-- [ ] Create settings page (pages/dashboard/settings.html)
-- [ ] Create public profile template (pages/[username]/index.html)
-- [ ] Create pricing page (pages/pricing.html)
-- [ ] Create cosmetics shop (pages/shop.html)
-- [ ] Build responsive mobile styles
-- [ ] Create auth manager JS module (js/auth-manager.js)
-- [ ] Create API client module (js/api-client.js)
-- [ ] Add PayPal integration script
+        <!-- Middle: Core Central Navigation -->
+        <nav class="topnav-center" aria-label="Core navigation">
+          <a class="nav-link" href="/">Home</a>
+          <a class="nav-link nav-link-pricing" href="/pricing">Pricing</a>
+        </nav>
 
-## PHASE 2: BACKEND SETUP (Railway)
-- [ ] Initialize Node.js + Express project
-- [ ] Set up TypeScript configuration
-- [ ] Create project folder structure
-- [ ] Install dependencies (express, drizzle, pg, redis, etc.)
-- [ ] Set up environment variables (.env.example)
-- [ ] Create Railway configuration (railway.toml)
-- [ ] Initialize Drizzle ORM
+        <!-- Far Right: Authentication -->
+        <div class="topnav-right" aria-label="Authentication">
+          <div class="auth" id="auth">
+            <a class="auth-link login-link" href="/login">Login</a>
+            <a class="auth-link primary" href="/signup">Sign Up Free</a>
+          </div>
+        </div>
+      </div>
+    </header>
 
-## PHASE 3: DATABASE LAYER (Supabase + Drizzle)
-- [ ] Create Supabase PostgreSQL project
-- [ ] Design database schema (8 tables)
-- [ ] Create Drizzle schema files (src/db/schema.ts)
-- [ ] Write Drizzle migrations
-- [ ] Create indexes for fast queries
-- [ ] Set up connection pooling
+    <main class="wrap pricing-page">
+      <div class="pricing-header">
+        <span class="eyebrow">Flexible plans for creators</span>
+        <h1>Choose the level of polish you want.</h1>
+        <p>Everything you need to launch a profile, grow an audience, and manage your online presence with less friction.</p>
+      </div>
 
-## PHASE 4: AUTHENTICATION SYSTEM
-- [ ] Implement user registration endpoint
-- [ ] Implement login endpoint (JWT tokens)
-- [ ] Implement token refresh endpoint
-- [ ] Add password hashing (bcryptjs)
-- [ ] Create JWT middleware
-- [ ] Implement logout (token blacklist)
-- [ ] Add email verification flow (SES)
-- [ ] Create password reset flow
+      <div class="pricing-grid">
+        <div class="pricing-card">
+          <h3 class="pricing-name">Starter</h3>
+          <p class="pricing-desc">For your first profile</p>
+          <div class="pricing-price">Free</div>
+          <button class="pricing-cta" onclick="handlePricing('starter')">Get Started</button>
+          <ul class="pricing-features">
+            <li>Unlimited links</li>
+            <li>Basic profile customization</li>
+            <li>Analytics dashboard</li>
+            <li>Community support</li>
+          </ul>
+        </div>
 
-## PHASE 5: USER PROFILE MANAGEMENT
-- [ ] Create user profile endpoint (GET)
-- [ ] Create profile update endpoint (PUT)
-- [ ] Implement username availability check
-- [ ] Create link management (add/edit/delete)
-- [ ] Create public @username route
-- [ ] Add profile caching (Upstash Redis)
-- [ ] Implement profile view counter
+        <div class="pricing-card featured">
+          <h3 class="pricing-name">Pro</h3>
+          <p class="pricing-desc">For creators growing fast</p>
+          <div class="pricing-price">$4.99<span>/month</span></div>
+          <button class="pricing-cta" onclick="handlePricing('pro')">Start Free Trial</button>
+          <ul class="pricing-features">
+            <li>Everything in Starter</li>
+            <li>Custom domain support</li>
+            <li>Advanced analytics</li>
+            <li>Priority support</li>
+            <li>Profile templates</li>
+          </ul>
+        </div>
 
-## PHASE 6: MEDIA HANDLING (Bunny.net)
-- [ ] Integrate Bunny.net SDK
-- [ ] Create avatar upload endpoint
-- [ ] Create background image upload endpoint
-- [ ] Set up CDN URLs
-- [ ] Add image optimization
-- [ ] Create media deletion endpoint
-- [ ] Test bandwidth/egress costs
+        <div class="pricing-card">
+          <h3 class="pricing-name">Elite</h3>
+          <p class="pricing-desc">For serious brands</p>
+          <div class="pricing-price">$9.99<span>/month</span></div>
+          <button class="pricing-cta" onclick="handlePricing('elite')">Upgrade Now</button>
+          <ul class="pricing-features">
+            <li>Everything in Pro</li>
+            <li>Unlimited custom domains</li>
+            <li>API access</li>
+            <li>24/7 support</li>
+            <li>White-label option</li>
+          </ul>
+        </div>
+      </div>
 
-## PHASE 7: COSMETICS SHOP
-- [ ] Design cosmetics schema
-- [ ] Create shop inventory (badges, animations, glows)
-- [ ] Build cosmetics listing endpoint
-- [ ] Create apply cosmetic endpoint
-- [ ] Add cosmetics preview feature
-- [ ] Implement cosmetics display on profiles
+      <div class="faq-section">
+        <h2 class="faq-title">Frequently asked questions</h2>
 
-## PHASE 8: PAYMENT INTEGRATION (PayPal)
-- [ ] Set up PayPal Business account
-- [ ] Create PayPal API client
-- [ ] Implement create order endpoint
-- [ ] Implement execute payment endpoint
-- [ ] Create webhook endpoint for confirmations
-- [ ] Store transaction records
-- [ ] Add purchase verification logic
-- [ ] Test sandbox payment flow
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>Can I cancel anytime?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">Yes. You can cancel your plan at any time and keep your profile live on the free tier.</div>
+        </div>
 
-## PHASE 9: ANALYTICS SYSTEM
-- [ ] Create visit tracking endpoint
-- [ ] Implement link click tracking
-- [ ] Create analytics dashboard query
-- [ ] Add date range filtering
-- [ ] Build chart rendering (frontend)
-- [ ] Add visitor IP logging
-- [ ] Implement analytics cache (Redis)
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>Do you offer refunds?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">Yes, all paid plans include a 7-day money-back guarantee.</div>
+        </div>
 
-## PHASE 10: EMAIL SERVICE (AWS SES)
-- [ ] Request SES production access
-- [ ] Verify sender email address
-- [ ] Create email template for verification
-- [ ] Create email template for password reset
-- [ ] Create email template for purchase receipt
-- [ ] Build email sending service
-- [ ] Test email delivery
+        <div class="faq-item">
+          <div class="faq-question" onclick="toggleFAQ(event)">
+            <span>What payment methods do you accept?</span>
+            <span>+</span>
+          </div>
+          <div class="faq-answer">We accept cards and PayPal through our secure payment processor.</div>
+        </div>
+      </div>
+    </main>
 
-## PHASE 11: SECURITY & PERFORMANCE
-- [ ] Implement rate limiting (Redis)
-- [ ] Add CORS configuration
-- [ ] Set up API key authentication (optional)
-- [ ] Create request logging middleware
-- [ ] Implement error handling middleware
-- [ ] Add input validation (joi/zod)
-- [ ] Set up Cloudflare WAF rules
-- [ ] Enable HTTPS everywhere
-- [ ] Configure security headers
+    <script>
+      function toggleFAQ(event) {
+        const item = event.currentTarget.parentElement;
+        item.classList.toggle('open');
+        event.currentTarget.querySelector('span:last-child').textContent = item.classList.contains('open') ? '−' : '+';
+      }
 
-## PHASE 12: DEPLOYMENT & DEVOPS
-- [ ] Push frontend to GitHub
-- [ ] Push backend to GitHub
-- [ ] Deploy frontend to Vercel
-- [ ] Deploy backend to Railway
-- [ ] Configure domain on Cloudflare
-- [ ] Point about-me.lol to Vercel
-- [ ] Set up API domain routing
-- [ ] Enable SSL/TLS certificates
-- [ ] Configure environment variables
-- [ ] Test production endpoints
-- [ ] Set up monitoring/alerts
-- [ ] Create backup strategy
+      function handlePricing(plan) {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          window.location.href = '/signup';
+          return;
+        }
+        window.alert('Selected plan: ' + plan + '. Checkout will be added soon.');
+      }
 
-## PHASE 13: FRONTEND - ADVANCED FEATURES
-- [ ] Build profile drag-drop editor
-- [ ] Add color picker widget
-- [ ] Create animation preview
-- [ ] Build real-time analytics charts
-- [ ] Add profile export (PDF/image)
-- [ ] Create theme templates
-- [ ] Build mobile app shell (optional)
-- [ ] Add dark mode toggle
-- [ ] Create settings management UI
-
-## PHASE 14: ADMIN & MODERATION
-- [ ] Create admin dashboard
-- [ ] Build user management interface
-- [ ] Add content moderation tools
-- [ ] Create ban/suspension system
-- [ ] Build leaderboard query
-- [ ] Add analytics dashboard (admin)
-- [ ] Create transaction viewer
-- [ ] Build cosmetics inventory manager
-
-## PHASE 15: TESTING & QA
-- [ ] Unit tests for backend services
-- [ ] API integration tests
-- [ ] Frontend component tests
-- [ ] End-to-end testing (login → profile → shop → purchase)
-- [ ] Load testing (concurrent users)
-- [ ] Security testing (SQL injection, XSS, CSRF)
-- [ ] Cross-browser testing
-- [ ] Mobile responsiveness testing
-
-## PHASE 16: OPTIMIZATION & SCALING
-- [ ] Profile page load time < 1s
-- [ ] API response time < 200ms
-- [ ] Implement CDN for static assets
-- [ ] Optimize database queries
-- [ ] Cache frequently accessed data
-- [ ] Monitor Redis memory usage
-- [ ] Implement request batching
-- [ ] Add gzip compression
-
-## PRIORITY ORDER (MVP)
-### Week 1-2 (MVP Core)
-1. Backend: Auth system
-2. Database: User + Profile schema
-3. Frontend: Login/Signup pages
-4. Frontend: Dashboard shell
-5. Backend: Profile CRUD endpoints
-6. Frontend: Profile editor UI
-
-### Week 3-4 (Basic Features)
-7. Bunny.net: Avatar uploads
-8. Frontend: Public profile pages
-9. Analytics: Basic visit tracking
-10. Frontend: Analytics dashboard
-
-### Week 5-6 (Monetization)
-11. PayPal: Shop integration
-12. Backend: Cosmetics endpoints
-13. Frontend: Shop UI
-14. Email: SES verification
-
-### Week 7+ (Polish & Scale)
-15. Cloudflare: WAF + Security
-16. Advanced animations
-17. Leaderboard
-18. Admin tools
+      const token = localStorage.getItem('token');
+      if (token) {
+        document.getElementById('auth').innerHTML = '<a href="/dashboard" class="auth-link">Dashboard</a>';
+      }
+    </script>
+  </body>
+</html>

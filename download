@@ -1,0 +1,37 @@
+NODE_ENV=development
+PORT=3000
+
+# Supabase PostgreSQL
+DATABASE_URL=postgresql://postgres.iqrttozvqaiygatytxwg:Pizzahussain1329@aws-1-ap-south-1.pooler.supabase.com:6543/postgres
+SUPABASE_URL=
+SUPABASE_KEY=
+
+# Upstash Redis
+REDIS_URL=redis-cli --tls -u redis://default:gQAAAAAAASdCAAIgcDFhMmZlZTZkMjg1MGU0MmJlODBkNDA5NzIxZGVlMDEwZA@more-gorilla-75586.upstash.io:6379
+
+# Bunny.net
+BUNNY_API_KEY=73c99583-d412-4be6-ba4a-558a1b1fe1bef528177f-d2e5-4c84-937b-2bffa419cba6
+BUNNY_STORAGE_ZONE=1620688
+BUNNY_STORAGE_REGION=de
+BUNNY_CDN_URL=https://aboutmelol.b-cdn.net/
+
+# Email (optional for now)
+# If you are using Render for hosting, you can skip AWS SES for now
+# and add a mail service later if needed.
+
+# PayPal
+PAYPAL_CLIENT_ID=Ad9vOKr-WKAfzuNprFHvZsyOEMVl5GY9Vnl5EbqwuWkZSccC0661PeT8UeOZGz07UJG0teE-eB1QNINT
+PAYPAL_SECRET=EDpFve9h4xa4BpXgknsA22UfcbfFPMPVhnLjyFMhqTQycX-lX_A4sfj8URMJq8v6xhNEGqS6HFmXvZ6l
+PAYPAL_MODE=sandbox
+
+# JWT
+# This is a long random string used to sign login tokens.
+# Example: generate one with: openssl rand -base64 32
+JWT_SECRET=replace_with_a_long_random_string
+
+# URLs
+# VITE_APP_URL = the public URL of your frontend app
+VITE_APP_URL=https://aboutmelol-1.onrender.com
+
+# VITE_API_BASE_URL = the public URL of your backend API
+VITE_API_BASE_URL=https://aboutmelol-1.onrender.com

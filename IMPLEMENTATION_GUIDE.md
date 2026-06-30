@@ -1,462 +1,415 @@
-# About Me.LOL - Full Implementation Guide
-
-## Project Overview
-Replicate guns.lol with profile landing pages, analytics, cosmetics shop, and premium features.
-- **Frontend**: Vercel (static + dynamic)
-- **Backend**: Railway (Node.js/Express)
-- **Database**: Supabase (PostgreSQL)
-- **Cache**: Upstash Redis
-- **Media**: Bunny.net (zero egress)
-- **Email**: Amazon SES
-- **Payments**: PayPal
-- **Security**: Cloudflare WAF
-
----
-
-## PHASE 1: FRONTEND STRUCTURE (Vercel)
-
-### 1.1 Current Landing Page ✓
-- `index.html` - Hero landing (already exists)
-- `styles.css` - Base styling (already exists)
-- `app.js` - Scroll logic (already exists)
-
-### 1.2 Pages to Create
-```
-frontend/
-├── public/
-│   ├── index.html (landing - exists)
-│   ├── favicon.ico (exists)
-│   └── fonts/
-├── pages/
-│   ├── login.html
-│   ├── signup.html
-│   ├── dashboard/
-│   │   ├── index.html (profile editor)
-│   │   ├── analytics.html
-│   │   └── settings.html
-│   ├── [username]/
-│   │   └── index.html (public profile view)
-│   ├── pricing.html
-│   └── cosmetics-shop.html
-├── styles/
-│   ├── base.css (extends styles.css)
-│   ├── dashboard.css
-│   ├── profile.css
-│   ├── shop.css
-│   └── animations.css
-├── js/
-│   ├── app.js (exists)
-│   ├── auth-manager.js (handle login/signup)
-│   ├── api-client.js (talk to Railway backend)
-│   ├── profile-editor.js (dashboard)
-│   ├── analytics-renderer.js
-│   └── cosmetics-cart.js (PayPal integration)
-├── assets/
-│   └── photos/ (exists)
-└── vercel.json (Vercel config)
-```
-
-### 1.3 Key Frontend Features
-- **Authentication UI**: Login/Signup forms
-- **Profile Builder**: Drag-drop link editor, color picker, avatar upload
-- **Analytics View**: Chart showing visits, clicks
-- **Public Profile**: @username pages
-- **Shop**: Cosmetics gallery (glowing text, badges, animations)
-- **Responsive**: Mobile-first design
-
----
-
-## PHASE 2: BACKEND STRUCTURE (Railway)
-
-### 2.1 Project Setup
-```
-backend/
-├── src/
-│   ├── index.ts (main server)
-│   ├── middleware/
-│   │   ├── auth.ts (JWT verification)
-│   │   ├── rate-limit.ts
-│   │   └── error-handler.ts
-│   ├── routes/
-│   │   ├── auth.ts (POST /register, /login, /refresh)
-│   │   ├── users.ts (GET/PUT /users/:id, GET /@username)
-│   │   ├── profiles.ts (GET/PUT /profiles/:id)
-│   │   ├── analytics.ts (GET /analytics/:userId)
-│   │   ├── cosmetics.ts (GET /shop, POST /cosmetics/apply)
-│   │   ├── payments.ts (POST /webhook/paypal)
-│   │   └── media.ts (GET/POST media, Bunny.net integration)
-│   ├── controllers/
-│   │   ├── authController.ts
-│   │   ├── userController.ts
-│   │   ├── profileController.ts
-│   │   ├── analyticsController.ts
-│   │   └── paymentController.ts
-│   ├── services/
-│   │   ├── userService.ts (business logic)
-│   │   ├── redisService.ts (Upstash integration)
-│   │   ├── emailService.ts (SES integration)
-│   │   ├── paymentService.ts (PayPal webhook handler)
-│   │   └── bunnyService.ts (Media upload/CDN)
-│   ├── db/
-│   │   ├── schema.ts (Drizzle schema)
-│   │   ├── migrations/ (Drizzle migrations)
-│   │   └── client.ts (Supabase connection)
-│   └── types/
-│       └── index.ts (TypeScript interfaces)
-├── .env.example
-├── package.json
-├── tsconfig.json
-├── railway.toml (Railway config)
-└── Dockerfile
-```
-
-### 2.2 API Endpoints
-
-#### Authentication
-```
-POST /auth/register
-POST /auth/login
-POST /auth/refresh
-POST /auth/logout
-```
-
-#### Users
-```
-GET /users/:id
-PUT /users/:id
-GET /@username (public profile)
-```
-
-#### Profiles
-```
-GET /profiles/:userId
-PUT /profiles/:userId
-POST /profiles/:userId/links
-DELETE /profiles/:userId/links/:linkId
-```
-
-#### Analytics
-```
-GET /analytics/:userId
-POST /analytics/:userId/track (log page visit)
-```
-
-#### Cosmetics Shop
-```
-GET /shop
-POST /shop/:cosmeticId/apply
-GET /cosmetics/user/:userId
-```
-
-#### Payments
-```
-POST /webhook/paypal
-GET /transactions/:userId
-```
-
-#### Media (Bunny.net)
-```
-POST /media/upload (avatar, background)
-DELETE /media/:mediaId
-```
-
----
-
-## PHASE 3: DATABASE SCHEMA (Supabase)
-
-### 3.1 Tables (using Drizzle ORM)
-
-```sql
--- Users table
-CREATE TABLE users (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  email VARCHAR(255) UNIQUE NOT NULL,
-  username VARCHAR(50) UNIQUE NOT NULL,
-  password_hash TEXT NOT NULL,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW(),
-  email_verified BOOLEAN DEFAULT false
-);
-
--- Profiles table
-CREATE TABLE profiles (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  bio TEXT,
-  avatar_url TEXT, -- Bunny.net URL
-  background_url TEXT, -- Bunny.net URL
-  theme_color VARCHAR(7) DEFAULT '#b670ff',
-  badge_text_glow BOOLEAN DEFAULT false,
-  badge_animation BOOLEAN DEFAULT false,
-  created_at TIMESTAMP DEFAULT NOW(),
-  updated_at TIMESTAMP DEFAULT NOW()
-);
-
--- Links table (user's profile links)
-CREATE TABLE links (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  title VARCHAR(100),
-  url TEXT NOT NULL,
-  icon_type VARCHAR(20), -- 'twitter', 'instagram', 'youtube', etc
-  position INT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Cosmetics table (shop items)
-CREATE TABLE cosmetics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  name VARCHAR(100) NOT NULL,
-  type VARCHAR(50), -- 'badge', 'animation', 'glow', 'background'
-  price DECIMAL(10, 2) NOT NULL,
-  description TEXT,
-  preview_url TEXT,
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- User cosmetics table (what user owns)
-CREATE TABLE user_cosmetics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
-  cosmetic_id UUID REFERENCES cosmetics(id),
-  purchased_at TIMESTAMP DEFAULT NOW(),
-  UNIQUE(user_id, cosmetic_id)
-);
-
--- Analytics table
-CREATE TABLE analytics (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  profile_id UUID REFERENCES profiles(id) ON DELETE CASCADE,
-  visit_date DATE,
-  visit_count INT DEFAULT 0,
-  click_count INT DEFAULT 0,
-  visitor_ip VARCHAR(50),
-  created_at TIMESTAMP DEFAULT NOW()
-);
-
--- Transactions table (PayPal purchases)
-CREATE TABLE transactions (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
-  paypal_transaction_id VARCHAR(255) UNIQUE,
-  cosmetic_id UUID REFERENCES cosmetics(id),
-  amount DECIMAL(10, 2),
-  status VARCHAR(20), -- 'pending', 'completed', 'failed'
-  created_at TIMESTAMP DEFAULT NOW()
-);
-```
-
----
-
-## PHASE 4: EXTERNAL SERVICES SETUP
-
-### 4.1 Supabase (PostgreSQL)
-1. Create project at supabase.com
-2. Get connection string
-3. Add to Railway env: `DATABASE_URL`
-4. Run Drizzle migrations
-
-### 4.2 Upstash Redis
-1. Create Redis instance at upstash.com
-2. Get Redis URL
-3. Add to Railway env: `REDIS_URL`
-4. Use for: profile cache, session storage, rate limiting
-
-### 4.3 Bunny.net (Media CDN)
-1. Create account at bunny.net
-2. Create storage zone (e.g., "aboutme-media")
-3. Get API key and storage zone name
-4. Railway env: `BUNNY_API_KEY`, `BUNNY_STORAGE_ZONE`
-5. Generates URLs like: `https://aboutme-media.b-cdn.net/avatar/user123.jpg`
-
-### 4.4 Amazon SES (Email)
-1. Request production access (starts in sandbox)
-2. Verify email addresses
-3. Get credentials: `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`
-4. Use for: verification emails, password resets, payment confirmations
-
-### 4.5 PayPal (Payments)
-1. Create business account at paypal.com
-2. Get Client ID and Secret
-3. Add to Railway env: `PAYPAL_CLIENT_ID`, `PAYPAL_SECRET`
-4. Set webhook URL: `https://railway-app.com/webhook/paypal`
-
-### 4.6 Cloudflare WAF
-1. Point about-me.lol DNS to Cloudflare nameservers
-2. Set up WAF rules:
-   - Block common scraping bots
-   - Rate limit login attempts (5 per minute)
-   - Geo-restriction (optional)
-
----
-
-## PHASE 5: ENVIRONMENT VARIABLES
-
-### Railway `.env` Template
-```
-# Database
-DATABASE_URL=postgresql://user:password@host/dbname
-
-# Redis
-REDIS_URL=redis://username:password@host:port
-
-# Bunny.net
-BUNNY_API_KEY=your_bunny_api_key
-BUNNY_STORAGE_ZONE=aboutme-media
-BUNNY_STORAGE_REGION=ny
-
-# AWS SES
-AWS_ACCESS_KEY_ID=your_key
-AWS_SECRET_ACCESS_KEY=your_secret
-AWS_REGION=us-east-1
-
-# PayPal
-PAYPAL_CLIENT_ID=your_client_id
-PAYPAL_SECRET=your_secret
-PAYPAL_WEBHOOK_ID=your_webhook_id
-
-# JWT
-JWT_SECRET=your_super_secret_key
-
-# Vercel Frontend
-VITE_API_BASE_URL=https://about-me-api.railway.app
-VITE_APP_URL=https://about-me.lol
-```
-
----
-
-## PHASE 6: DEPLOYMENT CHECKLIST
-
-### Step 1: Vercel Frontend
-- [ ] Git push frontend to GitHub
-- [ ] Connect repo to Vercel
-- [ ] Add domain: about-me.lol
-- [ ] Point DNS records to Vercel
-- [ ] SSL auto-issued
-
-### Step 2: Railway Backend
-- [ ] Git push backend to GitHub
-- [ ] Create Railway project
-- [ ] Connect GitHub repo
-- [ ] Add all env variables
-- [ ] Set port: 3000
-- [ ] Enable Public Networking
-- [ ] Get Railway domain: `https://about-me-api.railway.app`
-
-### Step 3: Supabase Database
-- [ ] Create project
-- [ ] Import schema via migrations
-- [ ] Set `DATABASE_URL` in Railway
-
-### Step 4: Security (Cloudflare)
-- [ ] Register about-me.lol domain
-- [ ] Add to Cloudflare
-- [ ] Set nameservers
-- [ ] Enable WAF rules
-
-### Step 5: Upstash Redis
-- [ ] Create instance
-- [ ] Add `REDIS_URL` to Railway
-
-### Step 6: Bunny.net Media
-- [ ] Create storage zone
-- [ ] Add credentials to Railway
-
-### Step 7: AWS SES & PayPal
-- [ ] Verify SES email
-- [ ] Set PayPal webhook
-- [ ] Add to Railway env
-
----
-
-## PHASE 7: FEATURE ROLLOUT
-
-### MVP (Week 1-2)
-- [ ] Landing page
-- [ ] User registration/login
-- [ ] Basic profile page
-- [ ] Link management (add/edit/delete)
-- [ ] Public @username pages
-
-### Phase 2 (Week 3-4)
-- [ ] Analytics dashboard
-- [ ] Avatar upload to Bunny.net
-- [ ] Basic cosmetics shop
-- [ ] PayPal purchase flow
-
-### Phase 3 (Week 5+)
-- [ ] Advanced animations
-- [ ] Custom backgrounds
-- [ ] Email verification via SES
-- [ ] Password reset flow
-- [ ] Admin dashboard
-- [ ] Leaderboard
-
----
-
-## KEY CODE EXAMPLES
-
-### Backend Setup (Express + TypeScript)
-```typescript
-// src/index.ts
-import express from 'express';
-import { Pool } from 'pg';
-import { Redis } from 'upstash-redis';
-
-const app = express();
-const db = new Pool({ connectionString: process.env.DATABASE_URL });
-const redis = new Redis({ url: process.env.REDIS_URL });
-
-app.use(express.json());
-
-// Routes
-app.use('/auth', require('./routes/auth'));
-app.use('/users', require('./routes/users'));
-app.use('/profiles', require('./routes/profiles'));
-
-app.listen(3000, () => console.log('Server running on :3000'));
-```
-
-### Drizzle Schema
-```typescript
-// src/db/schema.ts
-import { pgTable, text, uuid, timestamp, boolean, varchar } from 'drizzle-orm/pg-core';
-
-export const users = pgTable('users', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  email: varchar('email', { length: 255 }).unique().notNull(),
-  username: varchar('username', { length: 50 }).unique().notNull(),
-  passwordHash: text('password_hash').notNull(),
-  createdAt: timestamp('created_at').defaultNow(),
-});
-
-export const profiles = pgTable('profiles', {
-  id: uuid('id').primaryKey().defaultRandom(),
-  userId: uuid('user_id').references(() => users.id),
-  bio: text('bio'),
-  avatarUrl: text('avatar_url'),
-  createdAt: timestamp('created_at').defaultNow(),
-});
-```
-
----
-
-## NEXT STEPS
-1. **Complete landing page** (you have a good start!)
-2. **Set up Railway backend** - Create Node.js Express project
-3. **Create Supabase project** - PostgreSQL database
-4. **Build auth system** - registration, login, JWT
-5. **Implement profile pages** - public @username routes
-6. **Connect frontend to API** - axios/fetch calls
-7. **Add Bunny.net integration** - media uploads
-8. **Deploy to Vercel + Railway**
-9. **Set up Cloudflare WAF** - security hardening
-
----
-
-## TROUBLESHOOTING
-- **Slow profile loads?** → Cache in Upstash Redis
-- **Email not sending?** → Check SES sandbox/production status
-- **Media uploads failing?** → Verify Bunny.net API key
-- **PayPal webhooks not firing?** → Check webhook URL in PayPal dashboard
-- **Database migrations?** → Use Drizzle CLI: `drizzle-kit push:pg`
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Create your account - about-me.lol</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23a855f7%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="../styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  </head>
+  <body class="auth-body">
+    <div class="auth-container-centered">
+      <!-- Favicon Icon styled perfectly -->
+      <div class="auth-icon-wrapper">
+        <a href="/" title="Go back home">
+          <svg class="auth-icon-gun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </a>
+      </div>
+
+      <!-- Header Title -->
+      <h1 class="auth-header-title" id="authTitle">Create your account</h1>
+      
+      <!-- Subtitle -->
+      <p class="auth-header-sub" id="authSub">Build your profile, share your links, and customize everything in one place.</p>
+
+      <!-- Error & Success alerts -->
+      <div class="auth-error-msg" id="errorMsg"></div>
+      <div class="auth-success-msg" id="successMsg"></div>
+
+      <!-- Combined form -->
+      <form id="signupForm" style="width: 100%;">
+        <!-- STEP 1: USERNAME -->
+        <div id="stepUsernamePanel">
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="username">Username</label>
+            <div class="auth-input-wrapper">
+              <!-- Silhouette User Icon -->
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <!-- Domain prefix -->
+              <span class="auth-input-prefix">about-me.lol/</span>
+              <!-- Actual Input -->
+              <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                class="auth-input-field" 
+                required 
+                placeholder="username" 
+                autocomplete="off" 
+                spellcheck="false"
+                pattern="[a-zA-Z0-9_-]{3,20}"
+              />
+            </div>
+          </div>
+          <button type="button" class="auth-button-submit" id="continueBtn">Continue</button>
+        </div>
+
+        <!-- STEP 2: EMAIL & SOCIAL LOGINS (Exactly matching screenshot) -->
+        <div id="stepEmailPanel" style="display: none;">
+          <!-- Back button -->
+          <button type="button" class="auth-back-link" id="backToStep1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+          </button>
+
+          <!-- Username Card -->
+          <div class="auth-username-card">
+            <div class="auth-username-card-header">
+              <span class="auth-username-card-label">Username</span>
+              <button type="button" class="auth-username-card-edit" id="editUsernameBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="auth-username-card-value" id="usernameDisplay">about-me.lol/username</div>
+          </div>
+
+          <!-- Email Input Group -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="email">Email</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input type="email" id="email" name="email" class="auth-input-field" placeholder="Your email address" />
+            </div>
+          </div>
+
+          <!-- Continue Button -->
+          <button type="button" class="auth-button-submit" id="submitEmailBtn">Continue</button>
+
+          <!-- Divider -->
+          <div class="auth-divider-container">
+            <div class="auth-divider-line"></div>
+            <div class="auth-divider-text">OR</div>
+            <div class="auth-divider-line"></div>
+          </div>
+
+          <!-- Social Signups -->
+          <div class="auth-social-list">
+            <div class="auth-social-btn-wrapper">
+              <button type="button" class="auth-social-btn" id="googleSignupBtn">
+                <span class="auth-social-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.62-.63-1.05-1.38-1.19-2.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </span>
+                Sign up with Google
+              </button>
+            </div>
+
+            <div class="auth-social-btn-wrapper">
+              <button type="button" class="auth-social-btn" id="discordSignupBtn">
+                <span class="auth-social-icon" style="color: #5865F2;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                  </svg>
+                </span>
+                Sign up with Discord
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: PASSWORD -->
+        <div id="stepPasswordPanel" style="display: none;">
+          <!-- Back button -->
+          <button type="button" class="auth-back-link" id="backToStep2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+          </button>
+
+          <!-- Username Card -->
+          <div class="auth-username-card">
+            <div class="auth-username-card-header">
+              <span class="auth-username-card-label">Username</span>
+            </div>
+            <div class="auth-username-card-value" id="usernameDisplayPass">about-me.lol/username</div>
+          </div>
+
+          <!-- Password field -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="password">Password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input type="password" id="password" name="password" class="auth-input-field" placeholder="••••••••" minlength="8" />
+            </div>
+          </div>
+
+          <!-- Confirm Password field -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="confirmPassword">Confirm password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="auth-input-field" placeholder="••••••••" />
+            </div>
+          </div>
+
+          <!-- Final Submit Button -->
+          <button type="submit" class="auth-button-submit" id="submitBtn">Create Account</button>
+        </div>
+      </form>
+
+      <!-- Footer navigation -->
+      <div class="auth-footer-text">
+        Already have an account? <a href="/login" class="auth-footer-link">Sign In</a>
+      </div>
+    </div>
+
+    <script>
+      const stepUsernamePanel = document.getElementById('stepUsernamePanel');
+      const stepEmailPanel = document.getElementById('stepEmailPanel');
+      const stepPasswordPanel = document.getElementById('stepPasswordPanel');
+      
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirmPassword');
+      
+      const continueBtn = document.getElementById('continueBtn');
+      const submitEmailBtn = document.getElementById('submitEmailBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      const backToStep1Btn = document.getElementById('backToStep1');
+      const editUsernameBtn = document.getElementById('editUsernameBtn');
+      const backToStep2Btn = document.getElementById('backToStep2');
+      
+      const usernameDisplay = document.getElementById('usernameDisplay');
+      const usernameDisplayPass = document.getElementById('usernameDisplayPass');
+      
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      const form = document.getElementById('signupForm');
+
+      // Helper to display error
+      function showError(text) {
+        errorMsg.textContent = text;
+        errorMsg.style.display = 'block';
+        successMsg.style.display = 'none';
+      }
+
+      // Step 1 -> Step 2 (Username Entered)
+      continueBtn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        const usernameVal = usernameInput.value.trim();
+
+        if (!usernameVal) {
+          showError('Please enter a username.');
+          return;
+        }
+
+        if (usernameVal.length < 3 || usernameVal.length > 20) {
+          showError('Username must be between 3 and 20 characters.');
+          return;
+        }
+
+        const validPattern = /^[a-zA-Z0-9_-]+$/;
+        if (!validPattern.test(usernameVal)) {
+          showError('Username can only contain letters, numbers, underscores, and hyphens.');
+          return;
+        }
+
+        // Dynamically populate cards
+        const fullUsernamePath = `about-me.lol/${usernameVal}`;
+        usernameDisplay.textContent = fullUsernamePath;
+        usernameDisplayPass.textContent = fullUsernamePath;
+
+        // Transition panels
+        stepUsernamePanel.style.display = 'none';
+        stepEmailPanel.style.display = 'block';
+        stepPasswordPanel.style.display = 'none';
+        
+        emailInput.focus();
+      });
+
+      // Step 2 -> Step 1 (Go Back)
+      function goBackToStep1() {
+        errorMsg.style.display = 'none';
+        stepEmailPanel.style.display = 'none';
+        stepUsernamePanel.style.display = 'block';
+        usernameInput.focus();
+      }
+      backToStep1Btn.addEventListener('click', goBackToStep1);
+      editUsernameBtn.addEventListener('click', goBackToStep1);
+
+      // Step 2 -> Step 3 (Email Entered)
+      submitEmailBtn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        const emailVal = emailInput.value.trim();
+
+        if (!emailVal) {
+          showError('Please enter an email address.');
+          return;
+        }
+
+        // Basic email regex validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(emailVal)) {
+          showError('Please enter a valid email address.');
+          return;
+        }
+
+        // Transition panels
+        stepEmailPanel.style.display = 'none';
+        stepPasswordPanel.style.display = 'block';
+        passwordInput.focus();
+      });
+
+      // Step 3 -> Step 2 (Go Back)
+      backToStep2Btn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        stepPasswordPanel.style.display = 'none';
+        stepEmailPanel.style.display = 'block';
+        emailInput.focus();
+      });
+
+      // Form submission (Final step)
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        
+        const email = emailInput.value.trim();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (!email || !username || !password) {
+          showError('Please fill out all required fields.');
+          return;
+        }
+
+        if (password.length < 8) {
+          showError('Password must be at least 8 characters long.');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showError('Passwords do not match.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+
+        // Set demo auth values in local storage
+        localStorage.setItem('authMethod', 'email');
+        localStorage.setItem('aboutme_logged_in', '1');
+        localStorage.setItem('token', 'demo-token');
+        localStorage.setItem('username', username);
+
+        successMsg.textContent = 'Account created successfully! Redirecting...';
+        successMsg.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1200);
+      });
+
+      // Initialize Supabase Client
+      async function getSupabaseClient() {
+        if (window.supabaseClientInstance) {
+          return window.supabaseClientInstance;
+        }
+        try {
+          const res = await fetch('/api/auth/supabase-config');
+          const config = await res.json();
+          if (!config.supabaseUrl || !config.supabaseKey) {
+            console.error('Supabase credentials are not configured in your .env file!');
+            return null;
+          }
+          window.supabaseClientInstance = supabase.createClient(config.supabaseUrl, config.supabaseKey);
+          return window.supabaseClientInstance;
+        } catch (err) {
+          console.error('Failed to load Supabase config:', err);
+          return null;
+        }
+      }
+
+      async function startOAuth(provider) {
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+
+        successMsg.textContent = `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`;
+        successMsg.style.display = 'block';
+
+        const sb = await getSupabaseClient();
+        if (!sb) {
+          showError('Supabase integration is not fully configured on the server yet. Please add SUPABASE_URL and SUPABASE_KEY to your env variables.');
+          return;
+        }
+
+        // Save typed username to localStorage to reclaim it after OAuth callback redirects to /dashboard
+        const usernameVal = usernameInput.value.trim();
+        if (usernameVal) {
+          localStorage.setItem('oauth_signup_username', usernameVal);
+        } else {
+          localStorage.removeItem('oauth_signup_username');
+        }
+
+        const { data, error } = await sb.auth.signInWithOAuth({
+          provider: provider,
+          options: {
+            redirectTo: window.location.origin + '/dashboard'
+          }
+        });
+
+        if (error) {
+          showError(error.message);
+        }
+      }
+
+      // Google Signup
+      document.getElementById('googleSignupBtn').addEventListener('click', () => {
+        startOAuth('google');
+      });
+
+      // Discord Signup
+      document.getElementById('discordSignupBtn').addEventListener('click', () => {
+        startOAuth('discord');
+      });
+    </script>
+  </body>
+</html>
