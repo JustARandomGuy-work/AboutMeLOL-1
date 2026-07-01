@@ -1,0 +1,20 @@
+# Ignore backend code and config in Vercel static deployment
+backend/
+dist/
+node_modules/
+.git/
+.env
+.env.example
+BACKEND_PACKAGE.json
+BACKEND_STARTER.md
+DEPLOYMENT_SETUP.md
+DETAILED_TODO.md
+IMPLEMENTATION_GUIDE.md
+QUICK_START.md
+README.md
+SERVICES_SETUP_GUIDE.md
+TODO
+tsconfig.json
+package.json
+package-lock.json
+metadata.json
