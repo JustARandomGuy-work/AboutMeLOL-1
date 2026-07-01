@@ -7,7 +7,7 @@
   "scripts": {
     "dev": "tsx backend/src/index.ts",
     "build": "echo 'No compile step needed for tsx'",
-    "start": "npx tsx backend/src/index.ts",
+    "start": "npx tsx --experimental-specifier-resolution=node backend/src/index.ts",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
