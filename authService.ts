@@ -1,32 +1,19 @@
 import express, { Router, Request, Response } from 'express';
-import AnalyticsService from '../services/analyticsService.js';
+import auth from '../middleware/auth';
 
 const router = Router();
 
-router.get('/:profileId', async (req: Request, res: Response) => {
+router.post('/upload', auth, async (req: Request, res: Response) => {
   try {
-    const analytics = await AnalyticsService.getAnalytics(req.params.profileId);
-    res.json(analytics);
+    res.json({ message: 'Upload endpoint' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.post('/track-visit', async (req: Request, res: Response) => {
+router.delete('/:mediaId', auth, async (req: Request, res: Response) => {
   try {
-    const { profileId, visitorIp } = req.body;
-    await AnalyticsService.trackVisit(profileId, visitorIp);
-    res.json({ message: 'Visit tracked' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/track-click', async (req: Request, res: Response) => {
-  try {
-    const { profileId } = req.body;
-    await AnalyticsService.trackClick(profileId);
-    res.json({ message: 'Click tracked' });
+    res.json({ message: 'Media deleted' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

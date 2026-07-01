@@ -1,6 +1,6 @@
 import axios from 'axios';
-import { db } from '../index.js';
-import { transactions, userCosmetics, cosmetics } from '../db/schema.js';
+import { db } from '../index';
+import { transactions, userCosmetics, cosmetics } from '../db/schema';
 import { eq } from 'drizzle-orm';
 
 export class PaymentService {

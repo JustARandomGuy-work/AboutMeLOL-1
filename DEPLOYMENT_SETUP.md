@@ -3,74 +3,50 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Cosmetics Shop - About Me.LOL</title>
+    <title>Profile - About Me.LOL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
     <link rel="stylesheet" href="../styles.css" />
     <style>
-      .shop-header { text-align: center; padding: 40px 20px 0; }
-      .shop-header h1 { font-size: 36px; margin: 0 0 12px; }
-      .shop-header p { color: rgba(233,236,255,.6); font-size: 16px; margin: 0 0 30px; }
-      .cosmetics-grid { max-width: 1200px; margin: 30px auto; padding: 0 20px 40px; display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 20px; }
-      .cosmetic-card { background: rgba(182,112,255,.08); border: 1px solid rgba(182,112,255,.2); border-radius: 12px; overflow: hidden; transition: all 200ms; }
-      .cosmetic-card:hover { border-color: var(--accent); box-shadow: 0 0 20px rgba(182,112,255,.15); }
-      .cosmetic-preview { width: 100%; height: 150px; background: linear-gradient(135deg, rgba(182,112,255,.3), rgba(108,246,255,.3)); display: flex; align-items: center; justify-content: center; font-size: 40px; }
-      .cosmetic-info { padding: 16px; }
-      .cosmetic-name { font-weight: 600; font-size: 16px; margin: 0 0 4px; }
-      .cosmetic-type { font-size: 12px; color: var(--accent2); text-transform: uppercase; letter-spacing: 0.5px; }
-      .cosmetic-desc { font-size: 13px; color: rgba(233,236,255,.6); margin: 8px 0; }
-      .cosmetic-price { font-size: 20px; font-weight: 700; color: var(--accent); margin: 12px 0; }
-      .btn-buy { width: 100%; padding: 12px; background: var(--accent); color: #fff; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-      .btn-buy:hover { background: #a860e6; }
-      .btn-buy.owned { background: #50ff96; color: #000; }
-      .btn-buy.owned:hover { background: #40dd86; }
-      .filter-tabs { text-align: center; margin-bottom: 30px; }
-      .filter-tab { padding: 8px 16px; background: rgba(182,112,255,.1); border: 1px solid rgba(182,112,255,.2); border-radius: 6px; margin: 0 6px; cursor: pointer; font-size: 14px; }
-      .filter-tab.active { background: var(--accent); border-color: var(--accent); }
-      .auth-prompt { text-align: center; padding: 40px 20px; background: rgba(182,112,255,.1); border-radius: 12px; margin: 40px auto; max-width: 400px; }
+      body { background: #000; }
+      .profile-background { position: fixed; top: 0; left: 0; width: 100%; height: 40vh; background-size: cover; background-position: center; z-index: 1; }
+      .profile-background.default { background: linear-gradient(135deg, rgba(182,112,255,.2), rgba(108,246,255,.2)); }
+      .profile-container { position: relative; z-index: 2; padding-top: 35vh; }
+      .profile-card { max-width: 500px; margin: 0 auto 40px; background: rgba(13,7,20,.95); border: 1px solid rgba(182,112,255,.2); border-radius: 16px; padding: 40px 20px; text-align: center; }
+      .profile-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 50px; overflow: hidden; border: 3px solid var(--accent); }
+      .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
+      .profile-username { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
+      .profile-username.glow { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
+      .profile-bio { color: rgba(233,236,255,.7); font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
+      .profile-links { display: flex; flex-direction: column; gap: 12px; }
+      .link-btn { padding: 14px 20px; background: rgba(182,112,255,.1); border: 1px solid rgba(182,112,255,.3); border-radius: 8px; color: var(--accent2); text-decoration: none; font-size: 14px; font-weight: 600; transition: all 200ms; }
+      .link-btn:hover { background: rgba(182,112,255,.2); border-color: var(--accent); }
+      .cosmetics-section { max-width: 500px; margin: 40px auto; }
+      .cosmetics-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
+      .cosmetic-badge { background: rgba(182,112,255,.15); border: 1px solid rgba(182,112,255,.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 12px; }
+      .cosmetic-badge.active { background: rgba(108,246,255,.2); border-color: var(--accent2); }
+      @media (max-width: 600px) {
+        .profile-container { padding-top: 30vh; }
+        .profile-card { padding: 30px 16px; }
+        .profile-avatar { width: 100px; height: 100px; font-size: 40px; }
+        .profile-username { font-size: 20px; }
+      }
     </style>
   </head>
   <body>
-    <header class="topbar">
-      <div class="topbar-inner">
-        <!-- Far Left: Logo/Brand -->
-        <a class="brand" href="/" aria-label="about-me.lol">
-          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9b4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
-          <span class="brand-text">about-me.lol</span>
-        </a>
+    <div class="profile-background default" id="background"></div>
 
-        <!-- Middle: Core Central Navigation -->
-        <nav class="topnav-center" aria-label="Core navigation">
-          <a class="nav-link" href="/">Home</a>
-          <a class="nav-link nav-link-pricing" href="/pages/pricing.html">Pricing</a>
-        </nav>
+    <div class="profile-container">
+      <div class="profile-card">
+        <div class="profile-avatar" id="avatar">👤</div>
+        <h1 class="profile-username" id="username"></h1>
+        <p class="profile-bio" id="bio">No bio yet</p>
 
-        <!-- Far Right: Authentication -->
-        <div class="topnav-right" aria-label="Authentication">
-          <div class="auth" id="auth">
-            <a class="auth-link login-link" href="/login">Login</a>
-            <a class="auth-link primary" href="/signup">Sign Up Free</a>
-          </div>
-        </div>
+        <div class="profile-links" id="links"></div>
       </div>
-    </header>
 
-    <div class="shop-header">
-      <h1>Cosmetics Shop</h1>
-      <p>Level up your profile with exclusive cosmetics</p>
-    </div>
-
-    <div class="filter-tabs" id="filterTabs"></div>
-    <div class="cosmetics-grid" id="cosmeticsGrid"></div>
-
-    <div id="authPrompt" style="display: none;">
-      <div class="auth-prompt">
-        <h2>Sign in to shop</h2>
-        <p>Create an account to purchase cosmetics and customize your profile.</p>
-        <a href="/pages/login.html" class="btn" style="background: var(--accent); color: #fff; padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block;">Log In</a>
-        <a href="/pages/signup.html" class="btn" style="background: rgba(182,112,255,.2); color: var(--accent); padding: 10px 20px; border-radius: 6px; text-decoration: none; display: inline-block; margin-left: 8px;">Sign Up</a>
+      <div class="cosmetics-section" id="cosmeticsSection" style="display: none;">
+        <h2 style="text-align: center; margin-top: 0;">Cosmetics</h2>
+        <div class="cosmetics-list" id="cosmeticsList"></div>
       </div>
     </div>
 
@@ -78,112 +54,82 @@
       window.API_BASE_URL = window.API_BASE_URL || (
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3000'
-          : window.location.origin
+          : (window.location.hostname.includes('about-me.lol')
+              ? 'https://aboutmelol-1.onrender.com'
+              : window.location.origin)
       );
-      let allCosmetics = [];
-      let userCosmetics = [];
-      let currentFilter = 'all';
 
-      async function loadCosmetics() {
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/shop');
-          allCosmetics = await response.json();
-          renderCosmetics();
-          createFilters();
-        } catch (error) {
-          console.error('Error loading cosmetics:', error);
-        }
-      }
-
-      async function loadUserCosmetics() {
-        const token = localStorage.getItem('token');
-        if (!token) return;
+      async function loadProfile() {
+        const pathParts = window.location.pathname.split('/');
+        const username = pathParts[pathParts.length - 1].replace('@', '');
 
         try {
-          const response = await fetch(window.API_BASE_URL + '/api/cosmetics/user/' + localStorage.getItem('userId'), {
-            headers: { 'Authorization': 'Bearer ' + token }
-          });
-          const data = await response.json();
-          userCosmetics = data.cosmetics.map(c => c.id);
-        } catch (error) {
-          console.error('Error loading user cosmetics:', error);
-        }
-      }
+          const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username);
+          const profile = await response.json();
 
-      function createFilters() {
-        const types = ['all', ...new Set(allCosmetics.map(c => c.type))];
-        const html = types.map(type => 
-          `<button class="filter-tab ${type === 'all' ? 'active' : ''}" onclick="filterCosmetics('${type}')">${type.toUpperCase()}</button>`
-        ).join('');
-        document.getElementById('filterTabs').innerHTML = html;
-      }
-
-      function filterCosmetics(type) {
-        currentFilter = type;
-        document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
-        event.target.classList.add('active');
-        renderCosmetics();
-      }
-
-      function renderCosmetics() {
-        const cosmetics = currentFilter === 'all' ? allCosmetics : allCosmetics.filter(c => c.type === currentFilter);
-        const html = cosmetics.map(c => `
-          <div class="cosmetic-card">
-            <div class="cosmetic-preview">✨</div>
-            <div class="cosmetic-info">
-              <h3 class="cosmetic-name">${c.name}</h3>
-              <div class="cosmetic-type">${c.type}</div>
-              <p class="cosmetic-desc">${c.description}</p>
-              <div class="cosmetic-price">$${c.price.toFixed(2)}</div>
-              <button class="btn-buy ${userCosmetics.includes(c.id) ? 'owned' : ''}" 
-                onclick="buyCosmetic('${c.id}', ${c.price})" 
-                ${userCosmetics.includes(c.id) ? 'disabled' : ''}>
-                ${userCosmetics.includes(c.id) ? '✓ Owned' : 'Buy Now'}
-              </button>
-            </div>
-          </div>
-        `).join('');
-        document.getElementById('cosmeticsGrid').innerHTML = html;
-      }
-
-      async function buyCosmetic(cosmeticId, price) {
-        const token = localStorage.getItem('token');
-        if (!token) {
-          window.location.href = '/pages/login.html';
-          return;
-        }
-
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/payments/create-order', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + token
-            },
-            body: JSON.stringify({ cosmeticId })
-          });
-
-          const data = await response.json();
-          if (response.ok) {
-            window.location.href = data.approvalUrl;
-          } else {
-            alert('Error: ' + data.error);
+          if (!response.ok) {
+            document.querySelector('.profile-card').innerHTML = '<h1>Profile not found</h1>';
+            return;
           }
+
+          // Update title
+          document.title = '@' + username + ' - About Me.LOL';
+
+          // Avatar
+          if (profile.avatarUrl) {
+            document.getElementById('avatar').innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" />`;
+          }
+
+          // Username
+          const usernameEl = document.getElementById('username');
+          usernameEl.textContent = '@' + username;
+          if (profile.badgeTextGlow) {
+            usernameEl.classList.add('glow');
+          }
+
+          // Bio
+          document.getElementById('bio').textContent = profile.bio || 'No bio yet';
+
+          // Background
+          if (profile.backgroundUrl) {
+            const bg = document.getElementById('background');
+            bg.style.backgroundImage = `url('${profile.backgroundUrl}')`;
+            bg.classList.remove('default');
+          }
+
+          // Links
+          const linksContainer = document.getElementById('links');
+          if (profile.links && profile.links.length > 0) {
+            linksContainer.innerHTML = profile.links
+              .sort((a, b) => a.position - b.position)
+              .map(link => `<a href="${link.url}" class="link-btn" target="_blank">${link.title}</a>`)
+              .join('');
+          } else {
+            linksContainer.innerHTML = '<p style="color: rgba(233,236,255,.5);">No links yet</p>';
+          }
+
+          // Cosmetics
+          if (profile.cosmetics && profile.cosmetics.length > 0) {
+            document.getElementById('cosmeticsSection').style.display = 'block';
+            const cosmeticsList = document.getElementById('cosmeticsList');
+            cosmeticsList.innerHTML = profile.cosmetics
+              .map(c => `<div class="cosmetic-badge active">${c.name}</div>`)
+              .join('');
+          }
+
+          // Track visit
+          await fetch(window.API_BASE_URL + '/api/analytics/track-visit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ profileId: profile.id })
+          });
         } catch (error) {
-          alert('Error creating order: ' + error.message);
+          console.error('Error loading profile:', error);
+          document.querySelector('.profile-card').innerHTML = '<h1>Error loading profile</h1>';
         }
       }
 
-      // Check auth and render
-      const token = localStorage.getItem('token');
-      if (!token) {
-        document.getElementById('authPrompt').style.display = 'block';
-      } else {
-        document.getElementById('auth').innerHTML = `<a href="/pages/dashboard/index.html" class="auth-link">Dashboard</a>`;
-        loadUserCosmetics();
-      }
-
-      loadCosmetics();
+      loadProfile();
     </script>
   </body>
 </html>

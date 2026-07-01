@@ -1,10 +1,10 @@
 import express, { Router, Request, Response } from 'express';
-import { db } from '../index.js';
-import { profiles, links } from '../db/schema.js';
+import { db } from '../index';
+import { profiles, links } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import auth, { AuthRequest } from '../middleware/auth.js';
-import ProfileService from '../services/profileService.js';
-import BunnyService from '../services/bunnyService.js';
+import auth, { AuthRequest } from '../middleware/auth';
+import ProfileService from '../services/profileService';
+import BunnyService from '../services/bunnyService';
 import multer from 'multer';
 
 const router = Router();

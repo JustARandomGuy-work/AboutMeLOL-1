@@ -1,45 +1,48 @@
-import express, { Router, Request, Response } from 'express';
-import { db } from '../index.js';
-import { cosmetics, userCosmetics } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
-import auth, { AuthRequest } from '../middleware/auth.js';
-
-const router = Router();
-
-router.get('/shop', async (req: Request, res: Response) => {
-  try {
-    const allCosmetics = await db.query.cosmetics.findMany();
-    res.json(allCosmetics);
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
+{
+  "name": "about-me-backend",
+  "version": "1.0.0",
+  "description": "About Me.LOL backend API",
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "echo 'No build required for direct execution'",
+    "start": "npx tsx --experimental-specifier-resolution=node src/index.ts",
+    "db:push": "drizzle-kit push:pg",
+    "db:generate": "drizzle-kit generate:pg",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "dotenv": "^16.3.1",
+    "pg": "^8.10.0",
+    "@supabase/supabase-js": "^2.38.0",
+    "ioredis": "^5.3.2",
+    "drizzle-orm": "^0.29.0",
+    "@vercel/postgres": "^0.4.2",
+    "jsonwebtoken": "^9.0.2",
+    "bcryptjs": "^2.4.3",
+    "zod": "^3.22.4",
+    "axios": "^1.6.0",
+    "nodemailer": "^6.9.7",
+    "aws-sdk": "^2.1498.0",
+    "helmet": "^7.1.0",
+    "express-rate-limit": "^7.1.5",
+    "uuid": "^9.0.1",
+    "multer": "^1.4.5-lts.1",
+    "tsx": "^4.7.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2",
+    "@types/express": "^4.17.21",
+    "@types/node": "^20.10.0",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.6",
+    "drizzle-kit": "^0.20.0",
+    "@types/multer": "^1.4.11"
+  },
+  "engines": {
+    "node": ">=18.0.0"
   }
-});
-
-router.get('/user/:userId', auth, async (req: AuthRequest, res: Response) => {
-  try {
-    const userCosms = await db.query.userCosmetics.findMany({
-      where: eq(userCosmetics.userId, req.params.userId)
-    });
-
-    const cosmeticIds = userCosms.map(uc => uc.cosmeticId);
-    const userCosmeticsList = await Promise.all(
-      cosmeticIds.map(id => db.query.cosmetics.findFirst({ where: eq(cosmetics.id, id!) }))
-    );
-
-    res.json({ cosmetics: userCosmeticsList.filter(Boolean) });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.post('/:cosmeticId/apply', auth, async (req: AuthRequest, res: Response) => {
-  try {
-    const { profileId } = req.body;
-    // Apply cosmetic logic here
-    res.json({ message: 'Cosmetic applied' });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-export default router;
+}

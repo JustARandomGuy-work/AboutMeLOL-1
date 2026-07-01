@@ -1,89 +1,42 @@
 import express, { Router, Request, Response } from 'express';
-import { db } from '../index.js';
-import { users, profiles } from '../db/schema.js';
+import { db } from '../index';
+import { cosmetics, userCosmetics } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import auth, { AuthRequest } from '../middleware/auth.js';
+import auth, { AuthRequest } from '../middleware/auth';
 
 const router = Router();
 
-router.get('/me', auth, async (req: AuthRequest, res: Response) => {
+router.get('/shop', async (req: Request, res: Response) => {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, req.userId!)
-    });
-
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
-
-    res.json({
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      emailVerified: user.emailVerified,
-      createdAt: user.createdAt
-    });
+    const allCosmetics = await db.query.cosmetics.findMany();
+    res.json(allCosmetics);
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.get('/:userId', async (req: Request, res: Response) => {
+router.get('/user/:userId', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, req.params.userId)
+    const userCosms = await db.query.userCosmetics.findMany({
+      where: eq(userCosmetics.userId, req.params.userId)
     });
 
-    if (!user) {
-      return res.status(404).json({ error: 'User not found' });
-    }
+    const cosmeticIds = userCosms.map(uc => uc.cosmeticId);
+    const userCosmeticsList = await Promise.all(
+      cosmeticIds.map(id => db.query.cosmetics.findFirst({ where: eq(cosmetics.id, id!) }))
+    );
 
-    res.json({
-      id: user.id,
-      username: user.username,
-      createdAt: user.createdAt
-    });
+    res.json({ cosmetics: userCosmeticsList.filter(Boolean) });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }
 });
 
-router.get('/check-username/:username', async (req: Request, res: Response) => {
+router.post('/:cosmeticId/apply', auth, async (req: AuthRequest, res: Response) => {
   try {
-    const user = await db.query.users.findFirst({
-      where: eq(users.username, req.params.username)
-    });
-
-    res.json({ available: !user });
-  } catch (error: any) {
-    res.status(500).json({ error: error.message });
-  }
-});
-
-router.put('/:userId', auth, async (req: AuthRequest, res: Response) => {
-  try {
-    if (req.userId !== req.params.userId) {
-      return res.status(403).json({ error: 'Forbidden' });
-    }
-
-    const { email } = req.body;
-
-    if (email) {
-      const existing = await db.query.users.findFirst({
-        where: eq(users.email, email)
-      });
-
-      if (existing && existing.id !== req.userId) {
-        return res.status(400).json({ error: 'Email already in use' });
-      }
-    }
-
-    const updated = await db.update(users)
-      .set({ ...req.body, updatedAt: new Date() })
-      .where(eq(users.id, req.userId))
-      .returning();
-
-    res.json(updated[0]);
+    const { profileId } = req.body;
+    // Apply cosmetic logic here
+    res.json({ message: 'Cosmetic applied' });
   } catch (error: any) {
     res.status(500).json({ error: error.message });
   }

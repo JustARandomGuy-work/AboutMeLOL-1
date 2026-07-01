@@ -1,74 +1,111 @@
-import { db, redis } from '../index.js';
-import { analytics, profiles } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import express, { Router, Request, Response } from 'express';
+import AuthService from '../services/authService';
+import auth from '../middleware/auth';
 
-export class AnalyticsService {
-  static async trackVisit(profileId: string, visitorIp?: string) {
-    const today = new Date().toISOString().split('T')[0];
+const router = Router();
 
-    const existingRecord = await db.query.analytics.findFirst({
-      where: eq(analytics.profileId, profileId)
-    });
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const { email, username, password } = req.body;
 
-    if (existingRecord) {
-      await db.update(analytics)
-        .set({ visitCount: (existingRecord.visitCount ?? 0) + 1 })
-        .where(eq(analytics.id, existingRecord.id));
-    } else {
-      await db.insert(analytics).values({
-        profileId,
-        visitDate: today,
-        visitCount: 1,
-        visitorIp
-      });
+    if (!email || !username || !password) {
+      return res.status(400).json({ error: 'Missing required fields' });
     }
 
-    // Cache invalidation
-    await redis.del(`analytics:${profileId}`);
+    const result = await AuthService.register(email, username, password);
+    res.status(201).json(result);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
+});
 
-  static async trackClick(profileId: string) {
-    const today = new Date().toISOString().split('T')[0];
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
 
-    const existingRecord = await db.query.analytics.findFirst({
-      where: eq(analytics.profileId, profileId)
-    });
-
-    if (existingRecord) {
-      await db.update(analytics)
-        .set({ clickCount: (existingRecord.clickCount ?? 0) + 1 })
-        .where(eq(analytics.id, existingRecord.id));
+    if (!email || !password) {
+      return res.status(400).json({ error: 'Missing email or password' });
     }
 
-    await redis.del(`analytics:${profileId}`);
+    const result = await AuthService.login(email, password);
+    res.json(result);
+  } catch (error: any) {
+    res.status(401).json({ error: error.message });
   }
+});
 
-  static async getAnalytics(profileId: string) {
-    const cacheKey = `analytics:${profileId}`;
-    const cached = await redis.get(cacheKey);
+router.post('/refresh', async (req: Request, res: Response) => {
+  try {
+    const { refreshToken } = req.body;
 
-    if (cached) {
-      return JSON.parse(cached);
+    if (!refreshToken) {
+      return res.status(400).json({ error: 'Missing refresh token' });
     }
 
-    const records = await db.query.analytics.findMany({
-      where: eq(analytics.profileId, profileId)
-    });
-
-    const totalVisits = records.reduce((sum: number, r) => sum + (r.visitCount ?? 0), 0);
-    const totalClicks = records.reduce((sum: number, r) => sum + (r.clickCount ?? 0), 0);
-
-    const result = {
-      profileId,
-      totalVisits,
-      totalClicks,
-      records
-    };
-
-    await redis.setex(cacheKey, 300, JSON.stringify(result));
-
-    return result;
+    const result = await AuthService.refreshToken(refreshToken);
+    res.json(result);
+  } catch (error: any) {
+    res.status(401).json({ error: error.message });
   }
-}
+});
 
-export default AnalyticsService;
+router.get('/supabase-config', (req: Request, res: Response) => {
+  let url = process.env.SUPABASE_URL || '';
+  let key = process.env.SUPABASE_KEY || '';
+
+  // Fallback: extract url from DATABASE_URL if not directly set
+  if (!url && process.env.DATABASE_URL) {
+    const match = process.env.DATABASE_URL.match(/@([^:/]+)/);
+    if (match && match[1]) {
+      const host = match[1];
+      if (host.includes('supabase')) {
+        const userMatch = process.env.DATABASE_URL.match(/postgres\.([^:]+):/);
+        if (userMatch && userMatch[1]) {
+          url = `https://${userMatch[1]}.supabase.co`;
+        }
+      }
+    }
+  }
+
+  // Sanitization of string representations of undefined/null or empty, as well as surrounding quotes
+  if (url) {
+    url = url.trim().replace(/^['"]|['"]$/g, '').trim();
+    // Remove trailing /rest/v1/ or /rest/v1 or trailing slashes if present
+    url = url.replace(/\/rest\/v1\/?$/, '');
+    url = url.replace(/\/+$/, '');
+  }
+  if (key) {
+    key = key.trim().replace(/^['"]|['"]$/g, '').trim();
+  }
+
+  if (url === 'undefined' || url === 'null' || !url) url = '';
+  if (key === 'undefined' || key === 'null' || !key) key = '';
+
+  res.json({
+    supabaseUrl: url,
+    supabaseKey: key
+  });
+});
+
+router.post('/social-login', async (req: Request, res: Response) => {
+  try {
+    const { email, username } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: 'Missing email' });
+    }
+
+    const fallbackUsername = username || email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '');
+
+    const result = await AuthService.socialLogin(email, fallbackUsername);
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+router.post('/logout', auth, (req: Request, res: Response) => {
+  res.json({ message: 'Logged out successfully' });
+});
+
+export default router;

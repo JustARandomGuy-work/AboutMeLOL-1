@@ -3,131 +3,441 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Profile - About Me.LOL</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
-    <link rel="stylesheet" href="../styles.css" />
-    <style>
-      body { background: #000; }
-      .profile-background { position: fixed; top: 0; left: 0; width: 100%; height: 40vh; background-size: cover; background-position: center; z-index: 1; }
-      .profile-background.default { background: linear-gradient(135deg, rgba(182,112,255,.2), rgba(108,246,255,.2)); }
-      .profile-container { position: relative; z-index: 2; padding-top: 35vh; }
-      .profile-card { max-width: 500px; margin: 0 auto 40px; background: rgba(13,7,20,.95); border: 1px solid rgba(182,112,255,.2); border-radius: 16px; padding: 40px 20px; text-align: center; }
-      .profile-avatar { width: 120px; height: 120px; border-radius: 50%; background: linear-gradient(135deg, var(--accent), var(--accent2)); margin: 0 auto 20px; display: flex; align-items: center; justify-content: center; font-size: 50px; overflow: hidden; border: 3px solid var(--accent); }
-      .profile-avatar img { width: 100%; height: 100%; object-fit: cover; }
-      .profile-username { font-size: 24px; font-weight: 700; margin: 0 0 8px; }
-      .profile-username.glow { text-shadow: 0 0 20px var(--accent), 0 0 40px var(--accent); }
-      .profile-bio { color: rgba(233,236,255,.7); font-size: 14px; margin: 0 0 24px; line-height: 1.6; }
-      .profile-links { display: flex; flex-direction: column; gap: 12px; }
-      .link-btn { padding: 14px 20px; background: rgba(182,112,255,.1); border: 1px solid rgba(182,112,255,.3); border-radius: 8px; color: var(--accent2); text-decoration: none; font-size: 14px; font-weight: 600; transition: all 200ms; }
-      .link-btn:hover { background: rgba(182,112,255,.2); border-color: var(--accent); }
-      .cosmetics-section { max-width: 500px; margin: 40px auto; }
-      .cosmetics-list { display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 12px; }
-      .cosmetic-badge { background: rgba(182,112,255,.15); border: 1px solid rgba(182,112,255,.3); border-radius: 8px; padding: 12px; text-align: center; font-size: 12px; }
-      .cosmetic-badge.active { background: rgba(108,246,255,.2); border-color: var(--accent2); }
-      @media (max-width: 600px) {
-        .profile-container { padding-top: 30vh; }
-        .profile-card { padding: 30px 16px; }
-        .profile-avatar { width: 100px; height: 100px; font-size: 40px; }
-        .profile-username { font-size: 20px; }
-      }
-    </style>
+    <title>Create your account - about-me.lol</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23a855f7%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
+    <link rel="stylesheet" href="/styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   </head>
-  <body>
-    <div class="profile-background default" id="background"></div>
-
-    <div class="profile-container">
-      <div class="profile-card">
-        <div class="profile-avatar" id="avatar">👤</div>
-        <h1 class="profile-username" id="username"></h1>
-        <p class="profile-bio" id="bio">No bio yet</p>
-
-        <div class="profile-links" id="links"></div>
+  <body class="auth-body">
+    <div class="auth-container-centered">
+      <!-- Favicon Icon styled perfectly -->
+      <div class="auth-icon-wrapper">
+        <a href="/" title="Go back home">
+          <svg class="auth-icon-gun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+          </svg>
+        </a>
       </div>
 
-      <div class="cosmetics-section" id="cosmeticsSection" style="display: none;">
-        <h2 style="text-align: center; margin-top: 0;">Cosmetics</h2>
-        <div class="cosmetics-list" id="cosmeticsList"></div>
+      <!-- Header Title -->
+      <h1 class="auth-header-title" id="authTitle">Create your account</h1>
+      
+      <!-- Subtitle -->
+      <p class="auth-header-sub" id="authSub">Build your profile, share your links, and customize everything in one place.</p>
+
+      <!-- Error & Success alerts -->
+      <div class="auth-error-msg" id="errorMsg"></div>
+      <div class="auth-success-msg" id="successMsg"></div>
+
+      <!-- Combined form -->
+      <form id="signupForm" style="width: 100%;">
+        <!-- STEP 1: USERNAME -->
+        <div id="stepUsernamePanel">
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="username">Username</label>
+            <div class="auth-input-wrapper">
+              <!-- Silhouette User Icon -->
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+              </span>
+              <!-- Domain prefix -->
+              <span class="auth-input-prefix">about-me.lol/</span>
+              <!-- Actual Input -->
+              <input 
+                type="text" 
+                id="username" 
+                name="username" 
+                class="auth-input-field" 
+                required 
+                placeholder="username" 
+                autocomplete="off" 
+                spellcheck="false"
+                pattern="[a-zA-Z0-9_\-]{3,20}"
+              />
+            </div>
+          </div>
+          <button type="button" class="auth-button-submit" id="continueBtn">Continue</button>
+        </div>
+
+        <!-- STEP 2: EMAIL & SOCIAL LOGINS (Exactly matching screenshot) -->
+        <div id="stepEmailPanel" style="display: none;">
+          <!-- Back button -->
+          <button type="button" class="auth-back-link" id="backToStep1">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+          </button>
+
+          <!-- Username Card -->
+          <div class="auth-username-card">
+            <div class="auth-username-card-header">
+              <span class="auth-username-card-label">Username</span>
+              <button type="button" class="auth-username-card-edit" id="editUsernameBtn">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="12" height="12">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                Edit
+              </button>
+            </div>
+            <div class="auth-username-card-value" id="usernameDisplay">about-me.lol/username</div>
+          </div>
+
+          <!-- Email Input Group -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="email">Email</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                  <polyline points="22,6 12,13 2,6"></polyline>
+                </svg>
+              </span>
+              <input type="email" id="email" name="email" class="auth-input-field" placeholder="Your email address" />
+            </div>
+          </div>
+
+          <!-- Continue Button -->
+          <button type="button" class="auth-button-submit" id="submitEmailBtn">Continue</button>
+
+          <!-- Divider -->
+          <div class="auth-divider-container">
+            <div class="auth-divider-line"></div>
+            <div class="auth-divider-text">OR</div>
+            <div class="auth-divider-line"></div>
+          </div>
+
+          <!-- Social Signups -->
+          <div class="auth-social-list">
+            <div class="auth-social-btn-wrapper">
+              <button type="button" class="auth-social-btn" id="googleSignupBtn">
+                <span class="auth-social-icon">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                    <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                    <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.62-.63-1.05-1.38-1.19-2.63z"/>
+                    <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                  </svg>
+                </span>
+                Sign up with Google
+              </button>
+            </div>
+
+            <div class="auth-social-btn-wrapper">
+              <button type="button" class="auth-social-btn" id="discordSignupBtn">
+                <span class="auth-social-icon" style="color: #5865F2;">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                    <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
+                  </svg>
+                </span>
+                Sign up with Discord
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- STEP 3: PASSWORD -->
+        <div id="stepPasswordPanel" style="display: none;">
+          <!-- Back button -->
+          <button type="button" class="auth-back-link" id="backToStep2">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="14" height="14">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+            Back
+          </button>
+
+          <!-- Username Card -->
+          <div class="auth-username-card">
+            <div class="auth-username-card-header">
+              <span class="auth-username-card-label">Username</span>
+            </div>
+            <div class="auth-username-card-value" id="usernameDisplayPass">about-me.lol/username</div>
+          </div>
+
+          <!-- Password field -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="password">Password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input type="password" id="password" name="password" class="auth-input-field" placeholder="••••••••" minlength="8" />
+            </div>
+          </div>
+
+          <!-- Confirm Password field -->
+          <div class="auth-form-group">
+            <label class="auth-form-label" for="confirmPassword">Confirm password</label>
+            <div class="auth-input-wrapper">
+              <span class="auth-input-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+              </span>
+              <input type="password" id="confirmPassword" name="confirmPassword" class="auth-input-field" placeholder="••••••••" />
+            </div>
+          </div>
+
+          <!-- Final Submit Button -->
+          <button type="submit" class="auth-button-submit" id="submitBtn">Create Account</button>
+        </div>
+      </form>
+
+      <!-- Footer navigation -->
+      <div class="auth-footer-text">
+        Already have an account? <a href="/login" class="auth-footer-link">Sign In</a>
       </div>
     </div>
 
     <script>
+      const stepUsernamePanel = document.getElementById('stepUsernamePanel');
+      const stepEmailPanel = document.getElementById('stepEmailPanel');
+      const stepPasswordPanel = document.getElementById('stepPasswordPanel');
+      
+      const usernameInput = document.getElementById('username');
+      const emailInput = document.getElementById('email');
+      const passwordInput = document.getElementById('password');
+      const confirmPasswordInput = document.getElementById('confirmPassword');
+      
+      const continueBtn = document.getElementById('continueBtn');
+      const submitEmailBtn = document.getElementById('submitEmailBtn');
+      const submitBtn = document.getElementById('submitBtn');
+      
+      const backToStep1Btn = document.getElementById('backToStep1');
+      const editUsernameBtn = document.getElementById('editUsernameBtn');
+      const backToStep2Btn = document.getElementById('backToStep2');
+      
+      const usernameDisplay = document.getElementById('usernameDisplay');
+      const usernameDisplayPass = document.getElementById('usernameDisplayPass');
+      
+      const errorMsg = document.getElementById('errorMsg');
+      const successMsg = document.getElementById('successMsg');
+      const form = document.getElementById('signupForm');
+
+      // Helper to display error
+      function showError(text) {
+        errorMsg.textContent = text;
+        errorMsg.style.display = 'block';
+        successMsg.style.display = 'none';
+      }
+
+      // Step 1 -> Step 2 (Username Entered)
+      continueBtn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        const usernameVal = usernameInput.value.trim();
+
+        if (!usernameVal) {
+          showError('Please enter a username.');
+          return;
+        }
+
+        if (usernameVal.length < 3 || usernameVal.length > 20) {
+          showError('Username must be between 3 and 20 characters.');
+          return;
+        }
+
+        const validPattern = /^[a-zA-Z0-9_-]+$/;
+        if (!validPattern.test(usernameVal)) {
+          showError('Username can only contain letters, numbers, underscores, and hyphens.');
+          return;
+        }
+
+        // Dynamically populate cards
+        const fullUsernamePath = `about-me.lol/${usernameVal}`;
+        usernameDisplay.textContent = fullUsernamePath;
+        usernameDisplayPass.textContent = fullUsernamePath;
+
+        // Transition panels
+        stepUsernamePanel.style.display = 'none';
+        stepEmailPanel.style.display = 'block';
+        stepPasswordPanel.style.display = 'none';
+        
+        emailInput.focus();
+      });
+
+      // Step 2 -> Step 1 (Go Back)
+      function goBackToStep1() {
+        errorMsg.style.display = 'none';
+        stepEmailPanel.style.display = 'none';
+        stepUsernamePanel.style.display = 'block';
+        usernameInput.focus();
+      }
+      backToStep1Btn.addEventListener('click', goBackToStep1);
+      editUsernameBtn.addEventListener('click', goBackToStep1);
+
+      // Step 2 -> Step 3 (Email Entered)
+      submitEmailBtn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        const emailVal = emailInput.value.trim();
+
+        if (!emailVal) {
+          showError('Please enter an email address.');
+          return;
+        }
+
+        // Basic email regex validation
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(emailVal)) {
+          showError('Please enter a valid email address.');
+          return;
+        }
+
+        // Transition panels
+        stepEmailPanel.style.display = 'none';
+        stepPasswordPanel.style.display = 'block';
+        passwordInput.focus();
+      });
+
+      // Step 3 -> Step 2 (Go Back)
+      backToStep2Btn.addEventListener('click', () => {
+        errorMsg.style.display = 'none';
+        stepPasswordPanel.style.display = 'none';
+        stepEmailPanel.style.display = 'block';
+        emailInput.focus();
+      });
+
+      // Form submission (Final step)
+      form.addEventListener('submit', (event) => {
+        event.preventDefault();
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+        
+        const email = emailInput.value.trim();
+        const username = usernameInput.value.trim();
+        const password = passwordInput.value;
+        const confirmPassword = confirmPasswordInput.value;
+
+        if (!email || !username || !password) {
+          showError('Please fill out all required fields.');
+          return;
+        }
+
+        if (password.length < 8) {
+          showError('Password must be at least 8 characters long.');
+          return;
+        }
+
+        if (password !== confirmPassword) {
+          showError('Passwords do not match.');
+          return;
+        }
+
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Creating account...';
+
+        // Set demo auth values in local storage
+        localStorage.setItem('authMethod', 'email');
+        localStorage.setItem('aboutme_logged_in', '1');
+        localStorage.setItem('token', 'demo-token');
+        localStorage.setItem('username', username);
+
+        successMsg.textContent = 'Account created successfully! Redirecting...';
+        successMsg.style.display = 'block';
+
+        setTimeout(() => {
+          window.location.href = '/dashboard';
+        }, 1200);
+      });
+
       window.API_BASE_URL = window.API_BASE_URL || (
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3000'
-          : window.location.origin
+          : (window.location.hostname.includes('about-me.lol')
+              ? 'https://aboutmelol-1.onrender.com'
+              : window.location.origin)
       );
 
-      async function loadProfile() {
-        const pathParts = window.location.pathname.split('/');
-        const username = pathParts[pathParts.length - 1].replace('@', '');
-
+      // Initialize Supabase Client
+      async function getSupabaseClient() {
+        console.log('[getSupabaseClient] Entering...');
+        if (window.supabaseClientInstance) {
+          console.log('[getSupabaseClient] Returning cached instance');
+          return window.supabaseClientInstance;
+        }
         try {
-          const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username);
-          const profile = await response.json();
-
-          if (!response.ok) {
-            document.querySelector('.profile-card').innerHTML = '<h1>Profile not found</h1>';
-            return;
+          console.log('[getSupabaseClient] Fetching config from:', window.API_BASE_URL + '/api/auth/supabase-config');
+          const res = await fetch(window.API_BASE_URL + '/api/auth/supabase-config');
+          console.log('[getSupabaseClient] Fetch response status:', res.status);
+          const config = await res.json();
+          console.log('[getSupabaseClient] Config received:', { hasUrl: !!config.supabaseUrl, hasKey: !!config.supabaseKey });
+          if (!config.supabaseUrl || !config.supabaseKey) {
+            console.error('Supabase credentials are not configured in your .env file!');
+            return null;
           }
-
-          // Update title
-          document.title = '@' + username + ' - About Me.LOL';
-
-          // Avatar
-          if (profile.avatarUrl) {
-            document.getElementById('avatar').innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" />`;
-          }
-
-          // Username
-          const usernameEl = document.getElementById('username');
-          usernameEl.textContent = '@' + username;
-          if (profile.badgeTextGlow) {
-            usernameEl.classList.add('glow');
-          }
-
-          // Bio
-          document.getElementById('bio').textContent = profile.bio || 'No bio yet';
-
-          // Background
-          if (profile.backgroundUrl) {
-            const bg = document.getElementById('background');
-            bg.style.backgroundImage = `url('${profile.backgroundUrl}')`;
-            bg.classList.remove('default');
-          }
-
-          // Links
-          const linksContainer = document.getElementById('links');
-          if (profile.links && profile.links.length > 0) {
-            linksContainer.innerHTML = profile.links
-              .sort((a, b) => a.position - b.position)
-              .map(link => `<a href="${link.url}" class="link-btn" target="_blank">${link.title}</a>`)
-              .join('');
-          } else {
-            linksContainer.innerHTML = '<p style="color: rgba(233,236,255,.5);">No links yet</p>';
-          }
-
-          // Cosmetics
-          if (profile.cosmetics && profile.cosmetics.length > 0) {
-            document.getElementById('cosmeticsSection').style.display = 'block';
-            const cosmeticsList = document.getElementById('cosmeticsList');
-            cosmeticsList.innerHTML = profile.cosmetics
-              .map(c => `<div class="cosmetic-badge active">${c.name}</div>`)
-              .join('');
-          }
-
-          // Track visit
-          await fetch(window.API_BASE_URL + '/api/analytics/track-visit', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ profileId: profile.id })
-          });
-        } catch (error) {
-          console.error('Error loading profile:', error);
-          document.querySelector('.profile-card').innerHTML = '<h1>Error loading profile</h1>';
+          window.supabaseClientInstance = supabase.createClient(config.supabaseUrl, config.supabaseKey);
+          console.log('[getSupabaseClient] Created Supabase client instance');
+          return window.supabaseClientInstance;
+        } catch (err) {
+          console.error('[getSupabaseClient] Failed to load Supabase config:', err);
+          return null;
         }
       }
 
-      loadProfile();
+      async function startOAuth(provider) {
+        console.log('[startOAuth] Initiated with provider:', provider);
+        errorMsg.style.display = 'none';
+        successMsg.style.display = 'none';
+
+        successMsg.textContent = `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`;
+        successMsg.style.display = 'block';
+
+        try {
+          console.log('[startOAuth] Fetching Supabase client...');
+          const sb = await getSupabaseClient();
+          console.log('[startOAuth] Supabase client check:', !!sb);
+          if (!sb) {
+            console.error('[startOAuth] Supabase client is null or undefined!');
+            showError('Supabase integration is not fully configured on the server yet. Please add SUPABASE_URL and SUPABASE_KEY to your env variables.');
+            return;
+          }
+
+          // Save typed username to localStorage to reclaim it after OAuth callback redirects to /dashboard
+          const usernameVal = usernameInput.value.trim();
+          console.log('[startOAuth] Storing typed username in local storage:', usernameVal);
+          if (usernameVal) {
+            localStorage.setItem('oauth_signup_username', usernameVal);
+          } else {
+            localStorage.removeItem('oauth_signup_username');
+          }
+
+          console.log('[startOAuth] Calling sb.auth.signInWithOAuth with provider:', provider);
+          const { data, error } = await sb.auth.signInWithOAuth({
+            provider: provider,
+            options: {
+              redirectTo: window.location.origin + '/dashboard'
+            }
+          });
+
+          console.log('[startOAuth] sb.auth.signInWithOAuth returned.', { data, error });
+
+          if (error) {
+            console.error('[startOAuth] OAuth error object returned from Supabase:', error);
+            showError(error.message);
+          }
+        } catch (err) {
+          console.error('[startOAuth] Caught exception in startOAuth flow:', err);
+          showError(`OAuth error: ${err.message || err}`);
+        }
+      }
+
+      // Google Signup
+      document.getElementById('googleSignupBtn').addEventListener('click', () => {
+        startOAuth('google');
+      });
+
+      // Discord Signup
+      document.getElementById('discordSignupBtn').addEventListener('click', () => {
+        startOAuth('discord');
+      });
     </script>
   </body>
 </html>

@@ -3,27 +3,27 @@ NODE_ENV=development
 PORT=3000
 
 # Supabase PostgreSQL
-DATABASE_URL=postgresql://postgres.iqrttozvqaiygatytxwg:Pizzahussain1329@aws-1-ap-south-1.pooler.supabase.com:6543/postgres
-SUPABASE_URL=https://iqrttozvqaiygatytxwg.supabase.co
-SUPABASE_KEY=sb_publishable_x5NXLcxnJfjQz4TcEQKyag_RH7xDmXb
+DATABASE_URL=
+SUPABASE_URL=
+SUPABASE_KEY=
 
 # Upstash Redis
-REDIS_URL=redis://default:gQAAAAAAASdCAAIgcDFhMmZlZTZkMjg1MGU0MmJlODBkNDA5NzIxZGVlMDEwZA@more-gorilla-75586.upstash.io:6379
+REDIS_URL=
 
 # Bunny.net Storage
-BUNNY_API_KEY=73c99583-d412-4be6-ba4a-558a1b1fe1bef528177f-d2e5-4c84-937b-2bffa419cba6
-BUNNY_STORAGE_ZONE=1620688
-BUNNY_STORAGE_REGION=de
-BUNNY_CDN_URL=https://aboutmelol.b-cdn.net/
+BUNNY_API_KEY=
+BUNNY_STORAGE_ZONE=
+BUNNY_STORAGE_REGION=
+BUNNY_CDN_URL=
 
 # PayPal Configuration
-PAYPAL_CLIENT_ID=Ad9vOKr-WKAfzuNprFHvZsyOEMVl5GY9Vnl5EbqwuWkZSccC0661PeT8UeOZGz07UJG0teE-eB1QNINT
-PAYPAL_SECRET=EDpFve9h4xa4BpXgknsA22UfcbfFPMPVhnLjyFMhqTQycX-lX_A4sfj8URMJq8v6xhNEGqS6HFmXvZ6l
+PAYPAL_CLIENT_ID=
+PAYPAL_SECRET=
 PAYPAL_MODE=sandbox
 
 # JWT Token Signing
-JWT_SECRET=Z#9&vL2!kP8@xW5$mQ3#yR7%jT2^bL9*zN4_cX1
+JWT_SECRET=
 
 # Public URLs
-VITE_APP_URL=https://aboutmelol-1.onrender.com
-VITE_API_BASE_URL=https://aboutmelol-1.onrender.com
+VITE_APP_URL=
+VITE_API_BASE_URL=

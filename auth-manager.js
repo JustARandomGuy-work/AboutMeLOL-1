@@ -1,86 +1,30 @@
-import { redis } from '../index.js';
-import { db } from '../index.js';
-import { users, profiles, links } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import { redis } from '../index';
 
-export class ProfileService {
-  static async getProfileByUsername(username: string) {
-    const cacheKey = `profile:${username}`;
-    const cached = await redis.get(cacheKey);
-    
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    const user = await db.query.users.findFirst({
-      where: eq(users.username, username)
-    });
-
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const profile = await db.query.profiles.findFirst({
-      where: eq(profiles.userId, user.id)
-    });
-
-    if (!profile) {
-      throw new Error('Profile not found');
-    }
-
-    const profileLinks = await db.query.links.findMany({
-      where: eq(links.profileId, profile.id)
-    });
-
-    const result = {
-      ...profile,
-      links: profileLinks
-    };
-
-    await redis.setex(cacheKey, 1800, JSON.stringify(result));
-
-    return result;
+export class RedisService {
+  static async get(key: string) {
+    return await redis.get(key);
   }
 
-  static async updateProfile(userId: string, data: any) {
-    const profile = await db.query.profiles.findFirst({
-      where: eq(profiles.userId, userId)
-    });
-
-    if (!profile) {
-      throw new Error('Profile not found');
-    }
-
-    const updated = await db.update(profiles)
-      .set(data)
-      .where(eq(profiles.id, profile.id))
-      .returning();
-
-    const user = await db.query.users.findFirst({
-      where: eq(users.id, userId)
-    });
-
-    if (user) {
-      await redis.del(`profile:${user.username}`);
-    }
-
-    return updated[0];
+  static async set(key: string, value: string, ttl: number = 3600) {
+    return await redis.setex(key, ttl, value);
   }
 
-  static async addLink(profileId: string, title: string, url: string, iconType: string = '') {
-    const position = 0;
-
-    const link = await db.insert(links)
-      .values({ profileId, title, url, iconType, position })
-      .returning();
-
-    return link[0];
+  static async del(key: string) {
+    return await redis.del(key);
   }
 
-  static async deleteLink(linkId: string) {
-    await db.delete(links).where(eq(links.id, linkId));
-    return true;
+  static async incrementCounter(key: string, ttl: number = 60) {
+    const val = await redis.incr(key);
+    if (val === 1) {
+      await redis.expire(key, ttl);
+    }
+    return val;
+  }
+
+  static async getCounter(key: string) {
+    const val = await redis.get(key);
+    return val ? parseInt(val) : 0;
   }
 }
 
-export default ProfileService;
+export default RedisService;

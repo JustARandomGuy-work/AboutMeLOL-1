@@ -1,30 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
-import jwt from 'jsonwebtoken';
+import dotenv from 'dotenv';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-export interface AuthRequest extends Request {
-  userId?: string;
-  user?: any;
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-export const auth = (req: AuthRequest, res: Response, next: NextFunction) => {
-  try {
-    const authHeader = req.headers.authorization;
-    if (!authHeader) {
-      return res.status(401).json({ error: 'Missing authorization header' });
-    }
-
-    const token = authHeader.split(' ')[1];
-    if (!token) {
-      return res.status(401).json({ error: 'Invalid token format' });
-    }
-
-    const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as any;
-    req.userId = decoded.id;
-    req.user = decoded;
-    next();
-  } catch (error) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
-  }
-};
-
-export default auth;
+// Load dotenv from root or backend directory depending on where we are running from
+dotenv.config({ path: path.resolve(__dirname, '../../.env') });
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
+dotenv.config({ path: path.resolve(__dirname, './.env') });
+dotenv.config(); // fallback to current working directory

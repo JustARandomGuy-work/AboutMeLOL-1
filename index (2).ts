@@ -1,183 +1,68 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
-import { db } from '../index.js';
-import { users, profiles } from '../db/schema.js';
+import express, { Router, Request, Response } from 'express';
+import auth, { AuthRequest } from '../middleware/auth';
+import PaymentService from '../services/paymentService';
+import EmailService from '../services/emailService';
+import { db } from '../index';
+import { cosmetics } from '../db/schema';
 import { eq } from 'drizzle-orm';
-import { AuthResponse } from '../types/index.js';
 
-export class AuthService {
-  static async register(email: string, username: string, password: string): Promise<AuthResponse> {
-    // Check if user exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email)
+const router = Router();
+
+router.post('/create-order', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const { cosmeticId } = req.body;
+
+    const cosmetic = await db.query.cosmetics.findFirst({
+      where: eq(cosmetics.id, cosmeticId)
     });
 
-    if (existingUser) {
-      throw new Error('Email already registered');
+    if (!cosmetic) {
+      return res.status(404).json({ error: 'Cosmetic not found' });
     }
 
-    const existingUsername = await db.query.users.findFirst({
-      where: eq(users.username, username)
-    });
-
-    if (existingUsername) {
-      throw new Error('Username already taken');
-    }
-
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // Create user
-    const newUser = await db.insert(users).values({
-      email,
-      username,
-      passwordHash
-    }).returning();
-
-    if (!newUser[0]) {
-      throw new Error('Failed to create user');
-    }
-
-    const { token, refreshToken } = this.generateTokens(newUser[0].id, email, username);
-
-    return {
-      id: newUser[0].id,
-      email: newUser[0].email,
-      username: newUser[0].username,
-      token,
-      refreshToken
-    };
+    const result = await PaymentService.createOrder(cosmeticId, parseFloat(cosmetic.price.toString()));
+    res.json(result);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static async socialLogin(email: string, username: string): Promise<AuthResponse> {
-    // 1. Check if user already exists by email
-    let user = await db.query.users.findFirst({
-      where: eq(users.email, email)
+router.post('/capture', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const { orderId, cosmeticId } = req.body;
+
+    const cosmetic = await db.query.cosmetics.findFirst({
+      where: eq(cosmetics.id, cosmeticId)
     });
 
-    if (!user) {
-      // 2. Generate a unique username if the desired one is already taken
-      let uniqueUsername = username;
-      let usernameTaken = await db.query.users.findFirst({
-        where: eq(users.username, uniqueUsername)
-      });
-
-      let attempts = 0;
-      while (usernameTaken && attempts < 10) {
-        uniqueUsername = `${username}${Math.floor(Math.random() * 1000)}`;
-        usernameTaken = await db.query.users.findFirst({
-          where: eq(users.username, uniqueUsername)
-        });
-        attempts++;
-      }
-
-      // 3. Create user with dummy password hash
-      const passwordHash = await bcrypt.hash(`social_oauth_${Math.random()}`, 10);
-      const inserted = await db.insert(users).values({
-        email,
-        username: uniqueUsername,
-        passwordHash
-      }).returning();
-
-      if (!inserted[0]) {
-        throw new Error('Failed to create user during social login');
-      }
-
-      user = inserted[0];
+    if (!cosmetic) {
+      return res.status(404).json({ error: 'Cosmetic not found' });
     }
 
-    // 4. Ensure profile is created (either automatically by DB trigger or manually here as fallback)
-    const existingProfile = await db.query.profiles.findFirst({
-      where: eq(profiles.userId, user.id)
-    });
+    const result = await PaymentService.captureOrder(orderId, req.userId!, cosmeticId, parseFloat(cosmetic.price.toString()));
 
-    if (!existingProfile) {
-      try {
-        await db.insert(profiles).values({
-          userId: user.id,
-          bio: `Welcome to ${user.username}'s profile!`,
-          themeColor: '#b670ff',
-          badgeTextGlow: false,
-          badgeAnimation: false
-        });
-      } catch (profileErr) {
-        console.error('Error inserting default profile:', profileErr);
-        // ignore if already created by a database trigger/constraint
-      }
-    }
-
-    // 5. Generate tokens
-    const { token, refreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-    return {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      token,
-      refreshToken
-    };
-  }
-
-  static async login(email: string, password: string): Promise<AuthResponse> {
+    // Send receipt email
     const user = await db.query.users.findFirst({
-      where: eq(users.email, email)
+      where: eq(cosmetics.id, req.userId!)
     });
 
-    if (!user) {
-      throw new Error('Invalid email or password');
+    if (user) {
+      await EmailService.sendPurchaseReceipt(user.email, cosmetic.name, parseFloat(cosmetic.price.toString()));
     }
 
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
-
-    const { token, refreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-    return {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      token,
-      refreshToken
-    };
+    res.json({ message: 'Payment captured', transaction: result });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static generateTokens(id: string, email: string, username: string) {
-    const token = jwt.sign(
-      { id, email, username },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '1h' }
-    );
-
-    const refreshToken = jwt.sign(
-      { id },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '7d' }
-    );
-
-    return { token, refreshToken };
+router.post('/webhook', async (req: Request, res: Response) => {
+  try {
+    await PaymentService.handleWebhook(req.body);
+    res.json({ message: 'Webhook processed' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static async refreshToken(refreshToken: string) {
-    try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'secret') as any;
-      const user = await db.query.users.findFirst({
-        where: eq(users.id, decoded.id)
-      });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const { token, refreshToken: newRefreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-      return { token, refreshToken: newRefreshToken };
-    } catch (error) {
-      throw new Error('Invalid refresh token');
-    }
-  }
-}
-
-export default AuthService;
+export default router;

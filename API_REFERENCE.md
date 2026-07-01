@@ -173,14 +173,16 @@
       window.API_BASE_URL = window.API_BASE_URL || (
         window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3000'
-          : window.location.origin
+          : (window.location.hostname.includes('about-me.lol')
+              ? 'https://aboutmelol-1.onrender.com'
+              : window.location.origin)
       );
 
       // Main function to run dashboard mounting and auth flow
       async function main() {
         try {
           // 1. Fetch Supabase Config from backend
-          const resConfig = await fetch('/api/auth/supabase-config');
+          const resConfig = await fetch(window.API_BASE_URL + '/api/auth/supabase-config');
           const config = await resConfig.json();
           
           if (config.supabaseUrl && config.supabaseKey) {

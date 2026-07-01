@@ -1,24 +1,12 @@
-import { Request, Response, NextFunction } from 'express';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { Pool } from 'pg';
+import * as schema from './schema';
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({ error: 'Validation error', details: err.message });
-  }
+export const dbClient = drizzle(pool, { schema });
 
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
-
-  if (err.status === 404) {
-    return res.status(404).json({ error: 'Not found' });
-  }
-
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    code: err.code
-  });
-};
-
-export default errorHandler;
+export default dbClient;
