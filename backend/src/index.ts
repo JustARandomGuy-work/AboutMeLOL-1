@@ -1,4 +1,5 @@
-import './loadEnv.js';
+// Load environment variables first
+import './loadEnv';
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -8,16 +9,16 @@ import Redis from 'ioredis';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import * as schema from './db/schema.js';
-import authRoutes from './routes/auth.js';
-import userRoutes from './routes/users.js';
-import profileRoutes from './routes/profiles.js';
-import analyticsRoutes from './routes/analytics.js';
-import cosmeticsRoutes from './routes/cosmetics.js';
-import paymentsRoutes from './routes/payments.js';
-import mediaRoutes from './routes/media.js';
-import { errorHandler } from './middleware/errorHandler.js';
-import { requestLogger } from './middleware/requestLogger.js';
+import * as schema from './db/schema';
+import authRoutes from './routes/auth';
+import userRoutes from './routes/users';
+import profileRoutes from './routes/profiles';
+import analyticsRoutes from './routes/analytics';
+import cosmeticsRoutes from './routes/cosmetics';
+import paymentsRoutes from './routes/payments';
+import mediaRoutes from './routes/media';
+import { errorHandler } from './middleware/errorHandler';
+import { requestLogger } from './middleware/requestLogger';
 
 const app: Express = express();
 const PORT = 3000;
