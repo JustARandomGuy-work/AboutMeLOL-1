@@ -6,8 +6,8 @@
   "main": "backend/src/index.ts",
   "scripts": {
     "dev": "tsx backend/src/index.ts",
-    "build": "cd backend && npm install && npm run build",
-    "start": "node backend/dist/index.js",
+    "build": "echo 'No compile step needed for tsx'",
+    "start": "npx tsx backend/src/index.ts",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
   "dependencies": {
@@ -28,7 +28,8 @@
     "nodemailer": "^6.9.7",
     "pg": "^8.11.3",
     "uuid": "^9.0.1",
-    "zod": "^3.22.4"
+    "zod": "^3.22.4",
+    "tsx": "^4.7.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
@@ -40,7 +41,6 @@
     "@types/nodemailer": "^8.0.1",
     "@types/pg": "^8.20.0",
     "drizzle-kit": "^0.20.13",
-    "tsx": "^4.7.0",
     "typescript": "^5.2.2"
   },
   "engines": {
