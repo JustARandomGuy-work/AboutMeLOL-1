@@ -6,6 +6,7 @@
     <title>Dashboard - About Me.LOL</title>
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%239b4dff%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
     <link rel="stylesheet" href="../../styles.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       .dashboard { display: grid; grid-template-columns: 250px 1fr; gap: 20px; padding: 80px 20px 20px; min-height: 100vh; }
       .sidebar { position: fixed; left: 20px; top: 80px; width: 220px; }
@@ -48,17 +49,27 @@
   <body>
     <header class="topbar">
       <div class="topbar-inner">
-        <a class="brand" href="/" aria-label="About-Me.LOL">
-          <span class="brand-dot" aria-hidden="true"></span>
-          <span class="brand-text">About-Me.LOL</span>
+        <!-- Far Left: Logo/Brand -->
+        <a class="brand" href="/" aria-label="about-me.lol">
+          <svg class="brand-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="#9b4dff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" />
+            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+          <span class="brand-text">about-me.lol</span>
         </a>
-        <nav class="topnav" aria-label="Top navigation">
-          <a class="nav-link" href="/pages/pricing.html">Pricing</a>
+
+        <!-- Middle: Core Central Navigation -->
+        <nav class="topnav-center" aria-label="Core navigation">
+          <a class="nav-link nav-link-pricing" href="/pages/pricing.html">Pricing</a>
           <a class="nav-link" href="/pages/shop.html">Shop</a>
         </nav>
-        <div class="auth">
-          <a class="auth-link" id="username-link" href="#">Dashboard</a>
-          <a class="auth-link primary" href="#" id="logoutBtn">Log Out</a>
+
+        <!-- Far Right: Authentication -->
+        <div class="topnav-right" aria-label="Authentication">
+          <div class="auth">
+            <a class="auth-link" id="username-link" href="#">Dashboard</a>
+            <a class="auth-link primary" href="#" id="logoutBtn">Log Out</a>
+          </div>
         </div>
       </div>
     </header>
@@ -160,17 +171,170 @@
 
     <script>
       window.API_BASE_URL = window.API_BASE_URL || (
-        window.location.hostname === 'localhost'
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
           ? 'http://localhost:3000'
-          : 'https://aboutmelol-1.onrender.com'
+          : (window.location.hostname.includes('about-me.lol')
+              ? 'https://aboutmelol-1.onrender.com'
+              : window.location.origin)
       );
 
-      // Check auth
-      if (!localStorage.getItem('token')) {
-        window.location.href = '/pages/login.html';
+      // Main function to run dashboard mounting and auth flow
+      async function main() {
+        try {
+          // 1. Fetch Supabase Config from backend
+          const resConfig = await fetch(window.API_BASE_URL + '/api/auth/supabase-config');
+          const config = await resConfig.json();
+          
+          if (config.supabaseUrl && config.supabaseKey) {
+            const sb = supabase.createClient(config.supabaseUrl, config.supabaseKey);
+            
+            // 2. Check for active Supabase session (e.g., from OAuth redirect)
+            const { data: { session }, error } = await sb.auth.getSession();
+            if (session && session.user) {
+              const email = session.user.email;
+              const savedUsername = localStorage.getItem('oauth_signup_username') || '';
+              
+              // 3. Sync/Login with backend
+              const resSync = await fetch('/api/auth/social-login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ email, username: savedUsername })
+              });
+              
+              if (resSync.ok) {
+                const authData = await resSync.json();
+                localStorage.setItem('token', authData.token);
+                localStorage.setItem('refreshToken', authData.refreshToken);
+                localStorage.setItem('userId', authData.id);
+                localStorage.setItem('username', authData.username);
+                localStorage.setItem('aboutme_logged_in', '1');
+                
+                // Clear temporary signup username state
+                localStorage.removeItem('oauth_signup_username');
+                
+                // Sign out of Supabase client to avoid session stickiness
+                await sb.auth.signOut();
+                
+                // Clear URL hash from redirect & reload to run normal dashboard
+                window.location.hash = '';
+                window.location.reload();
+                return;
+              } else {
+                const errData = await resSync.json();
+                console.error('Failed to sync social login with backend:', errData);
+              }
+            }
+          }
+        } catch (err) {
+          console.error('Error handling Supabase OAuth callback:', err);
+        }
+
+        // Check standard backend auth
+        if (!localStorage.getItem('token')) {
+          window.location.href = '/pages/login.html';
+          return;
+        }
+
+        // Sidebar navigation
+        document.querySelectorAll('.sidebar-link').forEach(link => {
+          link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const section = link.dataset.section;
+            document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+            document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
+            document.getElementById(section).style.display = 'block';
+            link.classList.add('active');
+          });
+        });
+
+        // Update username
+        const username = localStorage.getItem('username');
+        document.getElementById('username-link').textContent = '@' + username;
+        document.getElementById('publicProfileBtn').href = '/@' + username;
+
+        // Load profile
+        async function loadProfile() {
+          try {
+            const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username);
+            const profile = await response.json();
+            
+            if (response.ok) {
+              document.getElementById('bio').value = profile.bio || '';
+              document.getElementById('themeColor').value = profile.themeColor || '#b670ff';
+              document.getElementById('badgeTextGlow').checked = profile.badgeTextGlow || false;
+              
+              if (profile.avatarUrl) {
+                document.getElementById('avatarPreview').innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" />`;
+              }
+
+              // Load links
+              loadLinks(profile.id);
+            }
+          } catch (error) {
+            console.error('Error loading profile:', error);
+          }
+        }
+
+        function loadLinks(profileId) {
+          // Will be implemented with backend
+        }
+
+        // Save profile
+        document.getElementById('profileForm').addEventListener('submit', async (e) => {
+          e.preventDefault();
+          
+          const bio = document.getElementById('bio').value;
+          const themeColor = document.getElementById('themeColor').value;
+          const badgeTextGlow = document.getElementById('badgeTextGlow').checked;
+
+          try {
+            const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username, {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+              },
+              body: JSON.stringify({ bio, themeColor, badgeTextGlow })
+            });
+
+            if (response.ok) {
+              alert('Profile saved successfully!');
+            } else {
+              throw new Error('Failed to save');
+            }
+          } catch (error) {
+            alert('Error: ' + error.message);
+          }
+        });
+
+        // Avatar upload
+        document.getElementById('avatarInput').addEventListener('change', async (e) => {
+          const file = e.target.files[0];
+          if (!file) return;
+
+          const formData = new FormData();
+          formData.append('file', file);
+
+          try {
+            const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username + '/avatar', {
+              method: 'POST',
+              headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
+              body: formData
+            });
+
+            const data = await response.json();
+            if (response.ok) {
+              document.getElementById('avatarPreview').innerHTML = `<img src="${data.url}" alt="Avatar" />`;
+            }
+          } catch (error) {
+            alert('Error uploading avatar: ' + error.message);
+          }
+        });
+
+        loadProfile();
       }
 
-      // Logout
+      // Logout handler
       document.getElementById('logoutBtn').addEventListener('click', (e) => {
         e.preventDefault();
         localStorage.removeItem('token');
@@ -180,117 +344,43 @@
         window.location.href = '/';
       });
 
-      // Sidebar navigation
-      document.querySelectorAll('.sidebar-link').forEach(link => {
-        link.addEventListener('click', (e) => {
-          e.preventDefault();
-          const section = link.dataset.section;
-          document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
-          document.querySelectorAll('.sidebar-link').forEach(l => l.classList.remove('active'));
-          document.getElementById(section).style.display = 'block';
-          link.classList.add('active');
-        });
-      });
-
-      // Update username
-      const username = localStorage.getItem('username');
-      document.getElementById('username-link').textContent = '@' + username;
-      document.getElementById('publicProfileBtn').href = '/@' + username;
-
-      // Load profile
-      async function loadProfile() {
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username);
-          const profile = await response.json();
-          
-          if (response.ok) {
-            document.getElementById('bio').value = profile.bio || '';
-            document.getElementById('themeColor').value = profile.themeColor || '#b670ff';
-            document.getElementById('badgeTextGlow').checked = profile.badgeTextGlow || false;
-            
-            if (profile.avatarUrl) {
-              document.getElementById('avatarPreview').innerHTML = `<img src="${profile.avatarUrl}" alt="Avatar" />`;
-            }
-
-            // Load links
-            loadLinks(profile.id);
-          }
-        } catch (error) {
-          console.error('Error loading profile:', error);
-        }
-      }
-
-      function loadLinks(profileId) {
-        // Will be implemented with backend
-      }
-
-      // Save profile
-      document.getElementById('profileForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        
-        const bio = document.getElementById('bio').value;
-        const themeColor = document.getElementById('themeColor').value;
-        const badgeTextGlow = document.getElementById('badgeTextGlow').checked;
-
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username, {
-            method: 'PUT',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': 'Bearer ' + localStorage.getItem('token')
-            },
-            body: JSON.stringify({ bio, themeColor, badgeTextGlow })
-          });
-
-          if (response.ok) {
-            alert('Profile saved successfully!');
-          } else {
-            throw new Error('Failed to save');
-          }
-        } catch (error) {
-          alert('Error: ' + error.message);
-        }
-      });
-
-      // Avatar upload
-      document.getElementById('avatarInput').addEventListener('change', async (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
-
-        const formData = new FormData();
-        formData.append('file', file);
-
-        try {
-          const response = await fetch(window.API_BASE_URL + '/api/profiles/@' + username + '/avatar', {
-            method: 'POST',
-            headers: { 'Authorization': 'Bearer ' + localStorage.getItem('token') },
-            body: formData
-          });
-
-          const data = await response.json();
-          if (response.ok) {
-            document.getElementById('avatarPreview').innerHTML = `<img src="${data.url}" alt="Avatar" />`;
-          }
-        } catch (error) {
-          alert('Error uploading avatar: ' + error.message);
-        }
-      });
-
-      // Link modal
-      function openAddLinkModal() {
+      // Link modal handlers
+      window.openAddLinkModal = function() {
         document.getElementById('linkModal').style.display = 'flex';
-      }
-      function closeAddLinkModal() {
+      };
+      window.closeAddLinkModal = function() {
         document.getElementById('linkModal').style.display = 'none';
-      }
+      };
 
       document.getElementById('linkForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        // Will be implemented with backend
         closeAddLinkModal();
       });
 
-      loadProfile();
+      // Delete account handler
+      window.deleteAccount = async function() {
+        if (confirm("Are you sure you want to delete your account? This action cannot be undone.")) {
+          try {
+            const response = await fetch(window.API_BASE_URL + '/api/users/' + localStorage.getItem('userId'), {
+              method: 'DELETE',
+              headers: {
+                'Authorization': 'Bearer ' + localStorage.getItem('token')
+              }
+            });
+            if (response.ok) {
+              localStorage.clear();
+              window.location.href = '/';
+            } else {
+              alert('Failed to delete account');
+            }
+          } catch (error) {
+            console.error('Error deleting account:', error);
+          }
+        }
+      };
+
+      // Run main flow
+      main();
     </script>
   </body>
 </html>
