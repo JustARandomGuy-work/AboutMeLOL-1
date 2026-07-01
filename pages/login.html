@@ -171,51 +171,73 @@
 
       // Initialize Supabase Client
       async function getSupabaseClient() {
+        console.log('[getSupabaseClient] Entering...');
         if (window.supabaseClientInstance) {
+          console.log('[getSupabaseClient] Returning cached instance');
           return window.supabaseClientInstance;
         }
         try {
+          console.log('[getSupabaseClient] Fetching config from:', window.API_BASE_URL + '/api/auth/supabase-config');
           const res = await fetch(window.API_BASE_URL + '/api/auth/supabase-config');
+          console.log('[getSupabaseClient] Fetch response status:', res.status);
           const config = await res.json();
+          console.log('[getSupabaseClient] Config received:', { hasUrl: !!config.supabaseUrl, hasKey: !!config.supabaseKey });
           if (!config.supabaseUrl || !config.supabaseKey) {
             console.error('Supabase credentials are not configured in your .env file!');
             return null;
           }
           window.supabaseClientInstance = supabase.createClient(config.supabaseUrl, config.supabaseKey);
+          console.log('[getSupabaseClient] Created Supabase client instance');
           return window.supabaseClientInstance;
         } catch (err) {
-          console.error('Failed to load Supabase config:', err);
+          console.error('[getSupabaseClient] Failed to load Supabase config:', err);
           return null;
         }
       }
 
       async function startOAuth(provider) {
+        console.log('[startOAuth] Initiated with provider:', provider);
         errorMsg.style.display = 'none';
         successMsg.style.display = 'none';
 
         successMsg.textContent = `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`;
         successMsg.style.display = 'block';
 
-        const sb = await getSupabaseClient();
-        if (!sb) {
-          errorMsg.textContent = 'Supabase integration is not fully configured on the server yet. Please add SUPABASE_URL and SUPABASE_KEY to your env variables.';
-          errorMsg.style.display = 'block';
-          successMsg.style.display = 'none';
-          return;
-        }
-
-        // Clean up any stale OAuth signup usernames
-        localStorage.removeItem('oauth_signup_username');
-
-        const { data, error } = await sb.auth.signInWithOAuth({
-          provider: provider,
-          options: {
-            redirectTo: window.location.origin + '/dashboard'
+        try {
+          console.log('[startOAuth] Fetching Supabase client...');
+          const sb = await getSupabaseClient();
+          console.log('[startOAuth] Supabase client check:', !!sb);
+          if (!sb) {
+            console.error('[startOAuth] Supabase client is null or undefined!');
+            errorMsg.textContent = 'Supabase integration is not fully configured on the server yet. Please add SUPABASE_URL and SUPABASE_KEY to your env variables.';
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
+            return;
           }
-        });
 
-        if (error) {
-          errorMsg.textContent = error.message;
+          // Clean up any stale OAuth signup usernames
+          console.log('[startOAuth] Cleaning up any stale OAuth signup usernames');
+          localStorage.removeItem('oauth_signup_username');
+
+          console.log('[startOAuth] Calling sb.auth.signInWithOAuth with provider:', provider);
+          const { data, error } = await sb.auth.signInWithOAuth({
+            provider: provider,
+            options: {
+              redirectTo: window.location.origin + '/dashboard'
+            }
+          });
+
+          console.log('[startOAuth] sb.auth.signInWithOAuth returned.', { data, error });
+
+          if (error) {
+            console.error('[startOAuth] OAuth error object returned from Supabase:', error);
+            errorMsg.textContent = error.message;
+            errorMsg.style.display = 'block';
+            successMsg.style.display = 'none';
+          }
+        } catch (err) {
+          console.error('[startOAuth] Caught exception in startOAuth flow:', err);
+          errorMsg.textContent = `OAuth error: ${err.message || err}`;
           errorMsg.style.display = 'block';
           successMsg.style.display = 'none';
         }
