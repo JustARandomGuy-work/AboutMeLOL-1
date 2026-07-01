@@ -161,13 +161,21 @@
         }, 1200);
       });
 
+      window.API_BASE_URL = window.API_BASE_URL || (
+        window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+          ? 'http://localhost:3000'
+          : (window.location.hostname.includes('about-me.lol')
+              ? 'https://aboutmelol-1.onrender.com'
+              : window.location.origin)
+      );
+
       // Initialize Supabase Client
       async function getSupabaseClient() {
         if (window.supabaseClientInstance) {
           return window.supabaseClientInstance;
         }
         try {
-          const res = await fetch('https://ais-dev-gxquxqawfkpcxt63glxt3q-307491259124.europe-west2.run.app/api/auth/supabase-config');
+          const res = await fetch(window.API_BASE_URL + '/api/auth/supabase-config');
           const config = await res.json();
           if (!config.supabaseUrl || !config.supabaseKey) {
             console.error('Supabase credentials are not configured in your .env file!');
