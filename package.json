@@ -6,7 +6,7 @@
   "main": "backend/src/index.ts",
   "scripts": {
     "dev": "tsx backend/src/index.ts",
-    "build": "tsc -p backend/tsconfig.json",
+    "build": "cd backend && npm install && npm run build",
     "start": "node backend/dist/index.js",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
