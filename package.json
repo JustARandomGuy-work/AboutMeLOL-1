@@ -5,8 +5,8 @@
   "type": "module",
   "main": "backend/src/index.ts",
   "scripts": {
-    "dev": "tsx backend/src/index.ts",
-    "build": "echo 'No compile step needed for tsx'",
+    "dev": "node build-frontend.js && tsx backend/src/index.ts",
+    "build": "node build-frontend.js",
     "start": "npx tsx --experimental-specifier-resolution=node backend/src/index.ts",
     "lint": "tsc --noEmit -p tsconfig.json"
   },
