@@ -1,0 +1,29 @@
+# App Setup
+NODE_ENV=development
+PORT=3000
+
+# Supabase PostgreSQL
+DATABASE_URL=
+SUPABASE_URL=
+SUPABASE_KEY=
+
+# Upstash Redis
+REDIS_URL=
+
+# Bunny.net Storage
+BUNNY_API_KEY=
+BUNNY_STORAGE_ZONE=
+BUNNY_STORAGE_REGION=
+BUNNY_CDN_URL=
+
+# PayPal Configuration
+PAYPAL_CLIENT_ID=
+PAYPAL_SECRET=
+PAYPAL_MODE=sandbox
+
+# JWT Token Signing
+JWT_SECRET=
+
+# Public URLs
+VITE_APP_URL=
+VITE_API_BASE_URL=

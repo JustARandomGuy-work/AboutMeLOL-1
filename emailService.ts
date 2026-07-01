@@ -1,24 +1,92 @@
-import { Request, Response, NextFunction } from 'express';
+import express, { Router, Request, Response } from 'express';
+import { db } from '../index.js';
+import { users, profiles } from '../db/schema.js';
+import { eq } from 'drizzle-orm';
+import auth, { AuthRequest } from '../middleware/auth.js';
 
-export const errorHandler = (err: any, req: Request, res: Response, next: NextFunction) => {
-  console.error('Error:', err);
+const router = Router();
 
-  if (err.name === 'ValidationError') {
-    return res.status(400).json({ error: 'Validation error', details: err.message });
+router.get('/me', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, req.userId!)
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      id: user.id,
+      email: user.email,
+      username: user.username,
+      emailVerified: user.emailVerified,
+      createdAt: user.createdAt
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  if (err.name === 'UnauthorizedError') {
-    return res.status(401).json({ error: 'Unauthorized' });
+router.get('/:userId', async (req: Request, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.id, req.params.userId)
+    });
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    res.json({
+      id: user.id,
+      username: user.username,
+      createdAt: user.createdAt
+    });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  if (err.status === 404) {
-    return res.status(404).json({ error: 'Not found' });
+router.get('/check-username/:username', async (req: Request, res: Response) => {
+  try {
+    const user = await db.query.users.findFirst({
+      where: eq(users.username, req.params.username)
+    });
+
+    res.json({ available: !user });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  res.status(err.status || 500).json({
-    error: err.message || 'Internal server error',
-    code: err.code
-  });
-};
+router.put('/:userId', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    if (req.userId !== req.params.userId) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
 
-export default errorHandler;
+    const { email } = req.body;
+
+    if (email) {
+      const existing = await db.query.users.findFirst({
+        where: eq(users.email, email)
+      });
+
+      if (existing && existing.id !== req.userId) {
+        return res.status(400).json({ error: 'Email already in use' });
+      }
+    }
+
+    const updated = await db.update(users)
+      .set({ ...req.body, updatedAt: new Date() })
+      .where(eq(users.id, req.userId))
+      .returning();
+
+    res.json(updated[0]);
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
+export default router;

@@ -1,74 +1,142 @@
-import { db, redis } from '../index.js';
-import { analytics, profiles } from '../db/schema.js';
-import { eq } from 'drizzle-orm';
+import './loadEnv.js';
+import express, { Express, Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import helmet from 'helmet';
+import dotenv from 'dotenv';
+import { Pool } from 'pg';
+import Redis from 'ioredis';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import * as schema from './db/schema.js';
+import authRoutes from './routes/auth.js';
+import userRoutes from './routes/users.js';
+import profileRoutes from './routes/profiles.js';
+import analyticsRoutes from './routes/analytics.js';
+import cosmeticsRoutes from './routes/cosmetics.js';
+import paymentsRoutes from './routes/payments.js';
+import mediaRoutes from './routes/media.js';
+import { errorHandler } from './middleware/errorHandler.js';
+import { requestLogger } from './middleware/requestLogger.js';
 
-export class AnalyticsService {
-  static async trackVisit(profileId: string, visitorIp?: string) {
-    const today = new Date().toISOString().split('T')[0];
+const app: Express = express();
+const PORT = 3000;
 
-    const existingRecord = await db.query.analytics.findFirst({
-      where: eq(analytics.profileId, profileId)
-    });
+// Global middleware
+app.use(helmet({
+  contentSecurityPolicy: false,
+  frameguard: false
+}));
+app.use(cors({
+  origin: process.env.VITE_APP_URL || 'http://localhost:5173',
+  credentials: true
+}));
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+app.use(requestLogger);
 
-    if (existingRecord) {
-      await db.update(analytics)
-        .set({ visitCount: (existingRecord.visitCount ?? 0) + 1 })
-        .where(eq(analytics.id, existingRecord.id));
-    } else {
-      await db.insert(analytics).values({
-        profileId,
-        visitDate: today,
-        visitCount: 1,
-        visitorIp
-      });
-    }
+// Database connections
+export const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false }
+});
 
-    // Cache invalidation
-    await redis.del(`analytics:${profileId}`);
-  }
+export const db = drizzle(pool, { schema });
 
-  static async trackClick(profileId: string) {
-    const today = new Date().toISOString().split('T')[0];
+// Parse and sanitize Redis URL with TLS support for Upstash or other secure endpoints
+let redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+const redisOptions: any = {
+  maxRetriesPerRequest: 3,
+};
 
-    const existingRecord = await db.query.analytics.findFirst({
-      where: eq(analytics.profileId, profileId)
-    });
-
-    if (existingRecord) {
-      await db.update(analytics)
-        .set({ clickCount: (existingRecord.clickCount ?? 0) + 1 })
-        .where(eq(analytics.id, existingRecord.id));
-    }
-
-    await redis.del(`analytics:${profileId}`);
-  }
-
-  static async getAnalytics(profileId: string) {
-    const cacheKey = `analytics:${profileId}`;
-    const cached = await redis.get(cacheKey);
-
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    const records = await db.query.analytics.findMany({
-      where: eq(analytics.profileId, profileId)
-    });
-
-    const totalVisits = records.reduce((sum: number, r) => sum + (r.visitCount ?? 0), 0);
-    const totalClicks = records.reduce((sum: number, r) => sum + (r.clickCount ?? 0), 0);
-
-    const result = {
-      profileId,
-      totalVisits,
-      totalClicks,
-      records
-    };
-
-    await redis.setex(cacheKey, 300, JSON.stringify(result));
-
-    return result;
+if (redisUrl.includes('redis-cli')) {
+  const match = redisUrl.match(/(rediss?:\/\/[^\s]+)/);
+  if (match) {
+    redisUrl = match[1];
   }
 }
 
-export default AnalyticsService;
+if (process.env.REDIS_URL?.includes('--tls') || redisUrl.startsWith('rediss://') || redisUrl.includes('upstash.io')) {
+  if (redisUrl.startsWith('redis://')) {
+    redisUrl = redisUrl.replace('redis://', 'rediss://');
+  }
+  redisOptions.tls = {
+    rejectUnauthorized: false
+  };
+}
+
+export const redis = new Redis(redisUrl, redisOptions);
+
+pool.on('error', (err: Error) => {
+  console.error('Unexpected error on idle client', err);
+});
+
+redis.on('error', (err: Error) => {
+  console.error('Redis error:', err);
+});
+
+// Health check
+app.get('/health', (req: Request, res: Response) => {
+  res.json({
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: 'connected',
+    cache: 'connected'
+  });
+});
+
+// Routes
+app.use('/api/auth', authRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/profiles', profileRoutes);
+app.use('/api/analytics', analyticsRoutes);
+app.use('/api/cosmetics', cosmeticsRoutes);
+app.use('/api/payments', paymentsRoutes);
+app.use('/api/media', mediaRoutes);
+app.post('/webhook/paypal', paymentsRoutes);
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const rootDir = path.resolve(__dirname, '../../');
+
+// Serve specific page routes
+app.get('/signup', (req: Request, res: Response) => {
+  res.sendFile(path.join(rootDir, 'pages/signup.html'));
+});
+
+app.get('/login', (req: Request, res: Response) => {
+  res.sendFile(path.join(rootDir, 'pages/login.html'));
+});
+
+app.get('/pricing', (req: Request, res: Response) => {
+  res.sendFile(path.join(rootDir, 'pages/pricing.html'));
+});
+
+app.get('/dashboard', (req: Request, res: Response) => {
+  res.sendFile(path.join(rootDir, 'pages/dashboard/index.html'));
+});
+
+// Wildcard for public username profiles e.g. /@username
+app.get('/@:username', (req: Request, res: Response) => {
+  res.sendFile(path.join(rootDir, 'pages/profile-template.html'));
+});
+
+// Serve public static assets from the root directory
+app.use(express.static(rootDir));
+
+// 404 handler
+app.use((req: Request, res: Response) => {
+  res.status(404).json({ error: 'Not found' });
+});
+
+// Error handler (must be last)
+app.use(errorHandler);
+
+// Start server
+app.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📊 Health check: http://localhost:${PORT}/health`);
+  console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
+});
+
+export default app;

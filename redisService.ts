@@ -1,183 +1,101 @@
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import express, { Router, Request, Response } from 'express';
 import { db } from '../index.js';
-import { users, profiles } from '../db/schema.js';
+import { profiles, links } from '../db/schema.js';
 import { eq } from 'drizzle-orm';
-import { AuthResponse } from '../types/index.js';
+import auth, { AuthRequest } from '../middleware/auth.js';
+import ProfileService from '../services/profileService.js';
+import BunnyService from '../services/bunnyService.js';
+import multer from 'multer';
 
-export class AuthService {
-  static async register(email: string, username: string, password: string): Promise<AuthResponse> {
-    // Check if user exists
-    const existingUser = await db.query.users.findFirst({
-      where: eq(users.email, email)
+const router = Router();
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 50 * 1024 * 1024 } });
+
+router.get('/@:username', async (req: Request, res: Response) => {
+  try {
+    const profile = await ProfileService.getProfileByUsername(req.params.username);
+    res.json(profile);
+  } catch (error: any) {
+    res.status(404).json({ error: error.message });
+  }
+});
+
+router.get('/:profileId', async (req: Request, res: Response) => {
+  try {
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.id, req.params.profileId)
     });
 
-    if (existingUser) {
-      throw new Error('Email already registered');
+    if (!profile) {
+      return res.status(404).json({ error: 'Profile not found' });
     }
 
-    const existingUsername = await db.query.users.findFirst({
-      where: eq(users.username, username)
+    const profileLinks = await db.query.links.findMany({
+      where: eq(links.profileId, profile.id)
     });
 
-    if (existingUsername) {
-      throw new Error('Username already taken');
-    }
-
-    // Hash password
-    const passwordHash = await bcrypt.hash(password, 10);
-
-    // Create user
-    const newUser = await db.insert(users).values({
-      email,
-      username,
-      passwordHash
-    }).returning();
-
-    if (!newUser[0]) {
-      throw new Error('Failed to create user');
-    }
-
-    const { token, refreshToken } = this.generateTokens(newUser[0].id, email, username);
-
-    return {
-      id: newUser[0].id,
-      email: newUser[0].email,
-      username: newUser[0].username,
-      token,
-      refreshToken
-    };
+    res.json({ ...profile, links: profileLinks });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static async socialLogin(email: string, username: string): Promise<AuthResponse> {
-    // 1. Check if user already exists by email
-    let user = await db.query.users.findFirst({
-      where: eq(users.email, email)
+router.put('/@:username', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const { bio, themeColor, badgeTextGlow, badgeAnimation } = req.body;
+    const updated = await ProfileService.updateProfile(req.userId!, {
+      bio,
+      themeColor,
+      badgeTextGlow,
+      badgeAnimation,
+      updatedAt: new Date()
     });
 
-    if (!user) {
-      // 2. Generate a unique username if the desired one is already taken
-      let uniqueUsername = username;
-      let usernameTaken = await db.query.users.findFirst({
-        where: eq(users.username, uniqueUsername)
-      });
+    res.json(updated);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
+  }
+});
 
-      let attempts = 0;
-      while (usernameTaken && attempts < 10) {
-        uniqueUsername = `${username}${Math.floor(Math.random() * 1000)}`;
-        usernameTaken = await db.query.users.findFirst({
-          where: eq(users.username, uniqueUsername)
-        });
-        attempts++;
-      }
-
-      // 3. Create user with dummy password hash
-      const passwordHash = await bcrypt.hash(`social_oauth_${Math.random()}`, 10);
-      const inserted = await db.insert(users).values({
-        email,
-        username: uniqueUsername,
-        passwordHash
-      }).returning();
-
-      if (!inserted[0]) {
-        throw new Error('Failed to create user during social login');
-      }
-
-      user = inserted[0];
+router.post('/@:username/avatar', auth, upload.single('file'), async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No file provided' });
     }
 
-    // 4. Ensure profile is created (either automatically by DB trigger or manually here as fallback)
-    const existingProfile = await db.query.profiles.findFirst({
-      where: eq(profiles.userId, user.id)
+    const fileName = BunnyService.generateFileName(req.userId!, 'jpg');
+    const url = await BunnyService.uploadFile(fileName, req.file.buffer, 'avatars');
+
+    const profile = await db.query.profiles.findFirst({
+      where: eq(profiles.id, req.params.profileId || '')
     });
 
-    if (!existingProfile) {
-      try {
-        await db.insert(profiles).values({
-          userId: user.id,
-          bio: `Welcome to ${user.username}'s profile!`,
-          themeColor: '#b670ff',
-          badgeTextGlow: false,
-          badgeAnimation: false
-        });
-      } catch (profileErr) {
-        console.error('Error inserting default profile:', profileErr);
-        // ignore if already created by a database trigger/constraint
-      }
+    if (profile) {
+      await db.update(profiles).set({ avatarUrl: url }).where(eq(profiles.id, profile.id));
     }
 
-    // 5. Generate tokens
-    const { token, refreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-    return {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      token,
-      refreshToken
-    };
+    res.json({ url });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static async login(email: string, password: string): Promise<AuthResponse> {
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, email)
-    });
-
-    if (!user) {
-      throw new Error('Invalid email or password');
-    }
-
-    const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
-
-    if (!isPasswordValid) {
-      throw new Error('Invalid email or password');
-    }
-
-    const { token, refreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-    return {
-      id: user.id,
-      email: user.email,
-      username: user.username,
-      token,
-      refreshToken
-    };
+router.post('/:profileId/links', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    const { title, url, iconType } = req.body;
+    const link = await ProfileService.addLink(req.params.profileId, title, url, iconType);
+    res.status(201).json(link);
+  } catch (error: any) {
+    res.status(400).json({ error: error.message });
   }
+});
 
-  static generateTokens(id: string, email: string, username: string) {
-    const token = jwt.sign(
-      { id, email, username },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '1h' }
-    );
-
-    const refreshToken = jwt.sign(
-      { id },
-      process.env.JWT_SECRET || 'secret',
-      { expiresIn: '7d' }
-    );
-
-    return { token, refreshToken };
+router.delete('/:profileId/links/:linkId', auth, async (req: AuthRequest, res: Response) => {
+  try {
+    await ProfileService.deleteLink(req.params.linkId);
+    res.json({ message: 'Link deleted' });
+  } catch (error: any) {
+    res.status(500).json({ error: error.message });
   }
+});
 
-  static async refreshToken(refreshToken: string) {
-    try {
-      const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET || 'secret') as any;
-      const user = await db.query.users.findFirst({
-        where: eq(users.id, decoded.id)
-      });
-
-      if (!user) {
-        throw new Error('User not found');
-      }
-
-      const { token, refreshToken: newRefreshToken } = this.generateTokens(user.id, user.email, user.username);
-
-      return { token, refreshToken: newRefreshToken };
-    } catch (error) {
-      throw new Error('Invalid refresh token');
-    }
-  }
-}
-
-export default AuthService;
+export default router;
