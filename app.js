@@ -1,244 +1,58 @@
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Log In - about-me.lol</title>
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22%23a855f7%22 stroke-width=%222.5%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22><path d=%22M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71%22></path><path d=%22M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71%22></path></svg>">
-    <link rel="stylesheet" href="../styles.css" />
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  </head>
-  <body class="auth-body">
-    <div class="auth-container-centered">
-      <!-- Favicon Icon styled perfectly -->
-      <div class="auth-icon-wrapper">
-        <a href="/" title="Go back home">
-          <svg class="auth-icon-gun" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="#a855f7" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
-            <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
-          </svg>
-        </a>
-      </div>
+(() => {
+  // Force browser to always scroll to top on page refresh/reload
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
+  }
+  window.scrollTo(0, 0);
 
-      <!-- Header Title -->
-      <h1 class="auth-header-title">Welcome back</h1>
-      
-      <!-- Subtitle -->
-      <p class="auth-header-sub">Log in to manage your profile and access your dashboard settings.</p>
+  const yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = String(new Date().getFullYear());
 
-      <!-- Error & Success alerts -->
-      <div class="auth-error-msg" id="errorMsg"></div>
-      <div class="auth-success-msg" id="successMsg"></div>
+  const authDashboard = document.getElementById("authDashboard");
+  const authSignedOut = document.getElementById("authSignedOut");
 
-      <!-- Sign In Form -->
-      <form id="loginForm" style="width: 100%;">
-        <div class="auth-form-group">
-          <label class="auth-form-label" for="email">Email address</label>
-          <div class="auth-input-wrapper">
-            <span class="auth-input-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
-                <polyline points="22,6 12,13 2,6"></polyline>
-              </svg>
-            </span>
-            <input 
-              type="email" 
-              id="email" 
-              name="email" 
-              class="auth-input-field" 
-              required 
-              placeholder="you@example.com" 
-              autocomplete="email" 
-              spellcheck="false"
-            />
-          </div>
-        </div>
+  function isLoggedIn() {
+    const url = new URL(window.location.href);
+    const fromQuery = url.searchParams.get("loggedIn");
+    if (fromQuery !== null) return fromQuery === "1" || fromQuery === "true";
 
-        <div class="auth-form-group">
-          <label class="auth-form-label" for="password">Password</label>
-          <div class="auth-input-wrapper">
-            <span class="auth-input-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
-                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-              </svg>
-            </span>
-            <input 
-              type="password" 
-              id="password" 
-              name="password" 
-              class="auth-input-field" 
-              required 
-              placeholder="••••••••" 
-            />
-          </div>
-        </div>
+    try {
+      return localStorage.getItem("aboutme_logged_in") === "1" || Boolean(localStorage.getItem("token"));
+    } catch {
+      return false;
+    }
+  }
 
-        <button type="submit" class="auth-button-submit" id="submitBtn">Log In</button>
-      </form>
+  try {
+    const loggedIn = isLoggedIn();
+    if (authDashboard) authDashboard.hidden = !loggedIn;
+    if (authSignedOut) authSignedOut.hidden = loggedIn;
+  } catch {
+    if (authDashboard) authDashboard.hidden = true;
+    if (authSignedOut) authSignedOut.hidden = false;
+  }
 
-      <!-- Divider -->
-      <div class="auth-divider-container">
-        <div class="auth-divider-line"></div>
-        <div class="auth-divider-text">OR</div>
-        <div class="auth-divider-line"></div>
-      </div>
+  const toggleScrolled = () => {
+    const scrolled = window.scrollY > 24;
+    document.body.classList.toggle("scrolled", scrolled);
+  };
 
-      <!-- Social Logins -->
-      <div class="auth-social-list">
-        <!-- Google -->
-        <div class="auth-social-btn-wrapper">
-          <button type="button" class="auth-social-btn" id="googleBtn">
-            <span class="auth-social-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18">
-                <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-                <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-                <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22c-.62-.63-1.05-1.38-1.19-2.63z"/>
-                <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
-              </svg>
-            </span>
-            Continue with Google
-          </button>
-        </div>
+  window.addEventListener("scroll", toggleScrolled, { passive: true });
+  toggleScrolled();
 
-        <!-- Discord with Recommended badge -->
-        <div class="auth-social-btn-wrapper">
-          <div class="auth-badge-last" style="color: #c084fc; border-color: rgba(168, 85, 247, 0.4);">Recommended</div>
-          <button type="button" class="auth-social-btn" id="discordBtn" style="border-color: rgba(88, 101, 242, 0.25);">
-            <span class="auth-social-icon" style="color: #5865F2;">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                <path d="M20.317 4.37a19.791 19.791 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028c.462-.63.874-1.295 1.226-1.994.021-.041.001-.09-.041-.106a13.094 13.094 0 0 1-1.873-.894.077.077 0 0 1-.008-.128c.126-.093.252-.19.372-.287a.075.075 0 0 1 .077-.011c3.92 1.793 8.18 1.793 12.061 0a.073.073 0 0 1 .078.009c.12.099.246.195.373.289a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.894.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.156 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.156-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.156 2.418z"/>
-              </svg>
-            </span>
-            Continue with Discord
-          </button>
-        </div>
-      </div>
+  const copyBtn = document.getElementById("copyDomain");
+  copyBtn?.addEventListener("click", async (e) => {
+    e.preventDefault();
+    const domain = location.hostname || "about-me.lol";
+    try {
+      await navigator.clipboard.writeText(domain);
+      copyBtn.textContent = "Copied!";
+      setTimeout(() => (copyBtn.textContent = "Copy domain"), 900);
+    } catch {
+      window.prompt("Copy domain:", domain);
+    }
+  });
+})();
 
-      <!-- Footer navigation stacked exactly like screenshot -->
-      <div class="auth-footer-text" style="display: flex; flex-direction: column; gap: 8px; margin-top: 24px;">
-        <div>Lost account access? <a href="#" class="auth-footer-link" id="recoverLink">Recover account</a></div>
-        <div>Are you new to about-me.lol? <a href="/signup" class="auth-footer-link">Create an account</a></div>
-      </div>
-    </div>
+// Forced sync edit to fix corrupted file on GitHub
 
-    <script>
-      const emailInput = document.getElementById('email');
-      const passwordInput = document.getElementById('password');
-      const submitBtn = document.getElementById('submitBtn');
-      const errorMsg = document.getElementById('errorMsg');
-      const successMsg = document.getElementById('successMsg');
-      const form = document.getElementById('loginForm');
-
-      form.addEventListener('submit', (event) => {
-        event.preventDefault();
-        errorMsg.style.display = 'none';
-        successMsg.style.display = 'none';
-        
-        const email = emailInput.value.trim();
-        const password = passwordInput.value;
-
-        if (!email || !password) {
-          errorMsg.textContent = 'Please enter both your email and password.';
-          errorMsg.style.display = 'block';
-          return;
-        }
-
-        submitBtn.disabled = true;
-        submitBtn.textContent = 'Signing in...';
-
-        // Set demo auth values in local storage
-        localStorage.setItem('authMethod', 'email');
-        localStorage.setItem('aboutme_logged_in', '1');
-        localStorage.setItem('token', 'demo-token');
-        localStorage.setItem('username', email.split('@')[0]);
-
-        successMsg.textContent = 'Signed in successfully! Redirecting...';
-        successMsg.style.display = 'block';
-
-        setTimeout(() => {
-          window.location.href = '/dashboard';
-        }, 1200);
-      });
-
-      // Initialize Supabase Client
-      async function getSupabaseClient() {
-        if (window.supabaseClientInstance) {
-          return window.supabaseClientInstance;
-        }
-        try {
-          const res = await fetch('/api/auth/supabase-config');
-          const config = await res.json();
-          if (!config.supabaseUrl || !config.supabaseKey) {
-            console.error('Supabase credentials are not configured in your .env file!');
-            return null;
-          }
-          window.supabaseClientInstance = supabase.createClient(config.supabaseUrl, config.supabaseKey);
-          return window.supabaseClientInstance;
-        } catch (err) {
-          console.error('Failed to load Supabase config:', err);
-          return null;
-        }
-      }
-
-      async function startOAuth(provider) {
-        errorMsg.style.display = 'none';
-        successMsg.style.display = 'none';
-
-        successMsg.textContent = `Connecting with ${provider.charAt(0).toUpperCase() + provider.slice(1)}...`;
-        successMsg.style.display = 'block';
-
-        const sb = await getSupabaseClient();
-        if (!sb) {
-          errorMsg.textContent = 'Supabase integration is not fully configured on the server yet. Please add SUPABASE_URL and SUPABASE_KEY to your env variables.';
-          errorMsg.style.display = 'block';
-          successMsg.style.display = 'none';
-          return;
-        }
-
-        // Clean up any stale OAuth signup usernames
-        localStorage.removeItem('oauth_signup_username');
-
-        const { data, error } = await sb.auth.signInWithOAuth({
-          provider: provider,
-          options: {
-            redirectTo: window.location.origin + '/dashboard'
-          }
-        });
-
-        if (error) {
-          errorMsg.textContent = error.message;
-          errorMsg.style.display = 'block';
-          successMsg.style.display = 'none';
-        }
-      }
-
-      // Google OAuth
-      document.getElementById('googleBtn').addEventListener('click', () => {
-        startOAuth('google');
-      });
-
-      // Discord OAuth
-      document.getElementById('discordBtn').addEventListener('click', () => {
-        startOAuth('discord');
-      });
-
-      // Account Recovery simulation
-      document.getElementById('recoverLink').addEventListener('click', (e) => {
-        e.preventDefault();
-        errorMsg.style.display = 'none';
-        successMsg.style.display = 'none';
-        
-        const email = emailInput.value.trim();
-        if (!email) {
-          errorMsg.textContent = 'Please enter your email address above to recover your account.';
-          errorMsg.style.display = 'block';
-          emailInput.focus();
-        } else {
-          successMsg.textContent = `A recovery link has been sent to ${email}!`;
-          successMsg.style.display = 'block';
-        }
-      });
-    </script>
-  </body>
-</html>
